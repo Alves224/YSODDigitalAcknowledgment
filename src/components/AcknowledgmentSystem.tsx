@@ -204,7 +204,7 @@ export const AcknowledgmentSystem = () => {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-foreground mb-4">
-            Digital Acknowledgment System
+            YSOD Digital Acknowledgment Form Hub
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
             Select the type of acknowledgment you need to complete
