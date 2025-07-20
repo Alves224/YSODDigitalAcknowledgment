@@ -7,7 +7,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { FileText, Shield, Laptop, Users, AlertTriangle, CheckCircle, Plus, Trash2 } from 'lucide-react';
+import { FileText, Shield, Laptop, Users, AlertTriangle, CheckCircle, Plus, Trash2, Download } from 'lucide-react';
+import jsPDF from 'jspdf';
 
 interface AcknowledgmentItem {
   id: string;
@@ -193,6 +194,81 @@ export const AcknowledgmentSystem = () => {
     toast({
       title: "Acknowledgment Deleted",
       description: "Acknowledgment type has been deleted successfully.",
+    });
+  };
+
+  const exportToPDF = () => {
+    if (!selectedAck || !formData.employeeName) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields before exporting.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const pdf = new jsPDF();
+    
+    // Set font
+    pdf.setFont('helvetica', 'normal');
+    
+    // Title
+    pdf.setFontSize(18);
+    pdf.setTextColor(40, 40, 40);
+    pdf.text('YSOD Digital Acknowledgment Form', 20, 30);
+    
+    // Acknowledgment type
+    pdf.setFontSize(16);
+    pdf.text(selectedAck.title, 20, 50);
+    
+    // Request details
+    pdf.setFontSize(12);
+    pdf.text(`Request No: ${formData.requestNo}`, 20, 70);
+    pdf.text(`Employee Name: ${formData.employeeName}`, 20, 85);
+    pdf.text(`Date: ${new Date().toLocaleDateString()}`, 20, 100);
+    
+    // Content
+    if (selectedAck.content?.description) {
+      pdf.setFontSize(14);
+      pdf.text('Content:', 20, 125);
+      pdf.setFontSize(11);
+      const splitDescription = pdf.splitTextToSize(selectedAck.content.description, 170);
+      pdf.text(splitDescription, 20, 140);
+      
+      // Rules
+      if (selectedAck.content.rules && selectedAck.content.rules.length > 0) {
+        let yPosition = 140 + (splitDescription.length * 6) + 20;
+        pdf.setFontSize(14);
+        pdf.text('Rules and Procedures:', 20, yPosition);
+        
+        selectedAck.content.rules.forEach((rule, index) => {
+          yPosition += 15;
+          pdf.setFontSize(11);
+          const splitRule = pdf.splitTextToSize(`${index + 1}. ${rule}`, 170);
+          pdf.text(splitRule, 25, yPosition);
+          yPosition += (splitRule.length - 1) * 6;
+        });
+      }
+    }
+    
+    // Acknowledgment statement
+    const pageHeight = pdf.internal.pageSize.height;
+    pdf.setFontSize(12);
+    pdf.text('Acknowledgment:', 20, pageHeight - 60);
+    pdf.setFontSize(11);
+    pdf.text('I acknowledge that I have read, understood and agree to the above policies and procedures.', 20, pageHeight - 45);
+    
+    // Status
+    pdf.setFontSize(12);
+    pdf.setTextColor(0, 150, 0);
+    pdf.text('Status: Acknowledged ✓', 20, pageHeight - 25);
+    
+    // Save the PDF
+    pdf.save(`acknowledgment_${formData.requestNo}_${formData.employeeName.replace(/\s+/g, '_')}.pdf`);
+    
+    toast({
+      title: "PDF Downloaded",
+      description: "Acknowledgment form has been exported as PDF.",
     });
   };
 
@@ -396,6 +472,13 @@ export const AcknowledgmentSystem = () => {
                     Submit
                   </Button>
                   <Button 
+                    onClick={exportToPDF} 
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Export PDF
+                  </Button>
+                  <Button 
                     variant="destructive" 
                     onClick={() => setIsModalOpen(false)}
                     className="bg-red-600 hover:bg-red-700 px-6"
@@ -497,6 +580,13 @@ export const AcknowledgmentSystem = () => {
                       className="bg-green-600 hover:bg-green-700 text-white px-6"
                     >
                       Submit
+                    </Button>
+                    <Button 
+                      onClick={exportToPDF} 
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-6"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Export PDF
                     </Button>
                     <Button 
                       variant="destructive" 
