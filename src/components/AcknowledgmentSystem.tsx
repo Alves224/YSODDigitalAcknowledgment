@@ -7,7 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { FileText, Shield, Laptop, Users, AlertTriangle, CheckCircle, Plus } from 'lucide-react';
+import { FileText, Shield, Laptop, Users, AlertTriangle, CheckCircle, Plus, Trash2 } from 'lucide-react';
 
 interface AcknowledgmentItem {
   id: string;
@@ -188,6 +188,14 @@ export const AcknowledgmentSystem = () => {
     });
   };
 
+  const handleDeleteType = (typeId: string) => {
+    setAcknowledgmentTypes(acknowledgmentTypes.filter(type => type.id !== typeId));
+    toast({
+      title: "Acknowledgment Deleted",
+      description: "Acknowledgment type has been deleted successfully.",
+    });
+  };
+
   const selectedAck = acknowledgmentTypes.find(t => t.id === selectedType);
 
   return (
@@ -224,7 +232,20 @@ export const AcknowledgmentSystem = () => {
                 className="border hover:shadow-md transition-all duration-200 cursor-pointer hover:border-primary/50"
                 onClick={() => handleTypeSelect(type.id)}
               >
-                <CardHeader className="text-center">
+                <CardHeader className="text-center relative">
+                  {type.id.startsWith('custom-') && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="absolute top-2 right-2 h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteType(type.id);
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  )}
                   <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
                     <IconComponent className="w-8 h-8 text-primary" />
                   </div>
