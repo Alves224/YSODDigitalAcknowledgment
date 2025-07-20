@@ -89,7 +89,8 @@ export const AcknowledgmentSystem = () => {
   const [newTypeData, setNewTypeData] = useState({
     title: '',
     description: '',
-    content: ''
+    content: '',
+    sections: ['']
   });
   const [submissions, setSubmissions] = useState<AcknowledgmentItem[]>([]);
   const { toast } = useToast();
@@ -147,18 +148,43 @@ export const AcknowledgmentSystem = () => {
       title: newTypeData.title,
       description: newTypeData.description,
       icon: FileText,
-      content: newTypeData.content ? {
-        description: newTypeData.content
-      } : undefined
+      content: {
+        description: newTypeData.content,
+        rules: newTypeData.sections.filter(section => section.trim() !== '')
+      }
     };
 
     setAcknowledgmentTypes([...acknowledgmentTypes, newType]);
-    setNewTypeData({ title: '', description: '', content: '' });
+    setNewTypeData({ title: '', description: '', content: '', sections: [''] });
     setIsAddTypeModalOpen(false);
 
     toast({
       title: "Acknowledgment Type Added",
       description: "New acknowledgment type has been created successfully.",
+    });
+  };
+
+  const addSection = () => {
+    setNewTypeData({
+      ...newTypeData,
+      sections: [...newTypeData.sections, '']
+    });
+  };
+
+  const removeSection = (index: number) => {
+    const newSections = newTypeData.sections.filter((_, i) => i !== index);
+    setNewTypeData({
+      ...newTypeData,
+      sections: newSections.length > 0 ? newSections : ['']
+    });
+  };
+
+  const updateSection = (index: number, value: string) => {
+    const newSections = [...newTypeData.sections];
+    newSections[index] = value;
+    setNewTypeData({
+      ...newTypeData,
+      sections: newSections
     });
   };
 
@@ -366,6 +392,28 @@ export const AcknowledgmentSystem = () => {
                 </DialogHeader>
                 
                 <div className="space-y-6">
+                  {/* Content */}
+                  {selectedAck?.content?.description && (
+                    <div className="text-right" dir="rtl">
+                      <p className="text-gray-800 leading-relaxed text-base whitespace-pre-line">
+                        {selectedAck.content.description}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Numbered Rules */}
+                  {selectedAck?.content?.rules && selectedAck.content.rules.length > 0 && (
+                    <div className="text-right" dir="rtl">
+                      <ol className="list-decimal list-inside space-y-2 text-gray-800">
+                        {selectedAck.content.rules.map((rule, index) => (
+                          <li key={index} className="leading-relaxed">
+                            {rule}
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  )}
+
                   <div className="bg-blue-50 border border-blue-200 rounded p-4">
                     <div className="flex items-start gap-2">
                       <div className="w-4 h-4 bg-blue-500 rounded-full flex-shrink-0 mt-1"></div>
@@ -481,6 +529,45 @@ export const AcknowledgmentSystem = () => {
                   placeholder="Enter detailed acknowledgment content"
                   className="border-gray-300 min-h-[120px]"
                 />
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium text-gray-700">Numbered Sections/Rules (Optional)</Label>
+                <div className="space-y-3">
+                  {newTypeData.sections.map((section, index) => (
+                    <div key={index} className="flex gap-2">
+                      <span className="text-sm text-gray-500 mt-2 min-w-[20px]">{index + 1}.</span>
+                      <Textarea
+                        value={section}
+                        onChange={(e) => updateSection(index, e.target.value)}
+                        placeholder={`Enter section ${index + 1} content`}
+                        className="border-gray-300 flex-1"
+                        rows={2}
+                      />
+                      {newTypeData.sections.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeSection(index)}
+                          className="mt-1 text-red-600 hover:text-red-700"
+                        >
+                          Remove
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addSection}
+                    className="text-blue-600 hover:text-blue-700"
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Add Section
+                  </Button>
+                </div>
               </div>
             </div>
 
