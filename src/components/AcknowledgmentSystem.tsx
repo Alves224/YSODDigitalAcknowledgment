@@ -5,8 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { FileText, Shield, Laptop, Users, AlertTriangle, CheckCircle } from 'lucide-react';
+import { FileText, Shield, Laptop, Users, AlertTriangle, CheckCircle, Plus } from 'lucide-react';
 
 interface AcknowledgmentItem {
   id: string;
@@ -17,7 +18,38 @@ interface AcknowledgmentItem {
   acknowledged: boolean;
 }
 
-const acknowledgmentTypes = [
+interface AcknowledgmentType {
+  id: string;
+  title: string;
+  description: string;
+  icon: any;
+  content?: {
+    arabic?: string;
+    subtitle?: string;
+    description?: string;
+    rules?: string[];
+  };
+}
+
+const defaultAcknowledgmentTypes: AcknowledgmentType[] = [
+  {
+    id: 'remote-work',
+    title: 'Remote Area Working Acknowledgement',
+    description: 'إقرار إلتزام بتعليمات العمل في المناطق النائية',
+    icon: Laptop,
+    content: {
+      arabic: 'إقرار إلتزام بتعليمات العمل في المناطق النائية',
+      subtitle: 'Remote Area Working Acknowledgement',
+      description: `أقر بأنني تقدمت بناءاً على رغبتي واختياري بطلب الأنتقال للعمل في المنطقة النائية لمدة سنتين او في اي وقت يحدد حسب مايتطلبه العمل إستناداً إلى أنظمة التنقل في إدارة الأمن الصناعي
+
+كما أنني أوافق على الشروط الواردة أدناه الخاصة بالعمل في المناطق النائية:-`,
+      rules: [
+        'إستخدام السكن الموفر من قبل الشركة طيلة فترة النوبة الأسبوعية.',
+        'إستخدام المواصلات الموفرة من قبل الشركة وعدم إستخدام المركبة الشخصية للتنقل للعمل',
+        'الإلتزام واتباع جميع أنظمة وتعليمات السلامة وفق سياسات وأنظمة الشركة.'
+      ]
+    }
+  },
   {
     id: 'transfer',
     title: 'Transfer Acknowledgment',
@@ -29,24 +61,6 @@ const acknowledgmentTypes = [
     title: 'Safety Acknowledgment', 
     description: 'Acknowledge safety protocols and guidelines',
     icon: Shield,
-  },
-  {
-    id: 'remote-work',
-    title: 'Remote Area Working Acknowledgement',
-    description: 'أقرار التزام بتعليمات العمل في المناطق النائية',
-    icon: Laptop,
-    content: {
-      arabic: 'أقرار التزام بتعليمات العمل في المناطق النائية',
-      subtitle: 'Remote Area Working Acknowledgement',
-      description: `أقر أنني تقدمت بطلب رسمي وإجباري يطلب الانتقال والعمل في المنطقة النائية بسكن إقامة وأن أي رفض لاحق حسب متطلبات المنطقة من قبل الشركة وعدم إدخال التعويلات المقررة من قبل الشركة ونم أنشطة الحفل وإدارة الأمن الصحي.
-
-كما أنني أوافق على الشروط الواردة الخاصة بالعمل في المناطق النائية:`,
-      rules: [
-        'إستخدام الشكل المقرر من قبل شركة عليا قطر البيئة السويدي.',
-        'إستخدام المؤهلات المقررة من قبل الشركة وعدم إستخدام التجمعات المركزية للعمل.',
-        'الإلتزام وإتباع جميع التعليمات الآمنة وفق سياسات وأنظمة الشركة.'
-      ]
-    }
   },
   {
     id: 'security',
@@ -65,10 +79,17 @@ const acknowledgmentTypes = [
 export const AcknowledgmentSystem = () => {
   const [selectedType, setSelectedType] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddTypeModalOpen, setIsAddTypeModalOpen] = useState(false);
+  const [acknowledgmentTypes, setAcknowledgmentTypes] = useState<AcknowledgmentType[]>(defaultAcknowledgmentTypes);
   const [formData, setFormData] = useState({
     requestNo: '',
     employeeName: '',
     acknowledged: false
+  });
+  const [newTypeData, setNewTypeData] = useState({
+    title: '',
+    description: '',
+    content: ''
   });
   const [submissions, setSubmissions] = useState<AcknowledgmentItem[]>([]);
   const { toast } = useToast();
@@ -111,6 +132,36 @@ export const AcknowledgmentSystem = () => {
     });
   };
 
+  const handleAddNewType = () => {
+    if (!newTypeData.title || !newTypeData.description) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newType: AcknowledgmentType = {
+      id: `custom-${Date.now()}`,
+      title: newTypeData.title,
+      description: newTypeData.description,
+      icon: FileText,
+      content: newTypeData.content ? {
+        description: newTypeData.content
+      } : undefined
+    };
+
+    setAcknowledgmentTypes([...acknowledgmentTypes, newType]);
+    setNewTypeData({ title: '', description: '', content: '' });
+    setIsAddTypeModalOpen(false);
+
+    toast({
+      title: "Acknowledgment Type Added",
+      description: "New acknowledgment type has been created successfully.",
+    });
+  };
+
   const selectedAck = acknowledgmentTypes.find(t => t.id === selectedType);
 
   return (
@@ -124,6 +175,17 @@ export const AcknowledgmentSystem = () => {
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
             Select the type of acknowledgment you need to complete
           </p>
+        </div>
+
+        {/* Add New Type Button */}
+        <div className="flex justify-end mb-6">
+          <Button 
+            onClick={() => setIsAddTypeModalOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add New Acknowledgment Type
+          </Button>
         </div>
 
         {/* Acknowledgment Types Grid */}
@@ -207,18 +269,17 @@ export const AcknowledgmentSystem = () => {
                     </p>
                   </div>
 
-                  <div className="text-right" dir="rtl">
-                    <p className="font-semibold text-gray-800 mb-3">
-                      كما أنني أوافق على الشروط الواردة الخاصة بالعمل في المناطق النائية:
-                    </p>
-                    <ol className="list-decimal list-inside space-y-2 text-gray-800">
-                      {selectedAck.content.rules.map((rule, index) => (
-                        <li key={index} className="leading-relaxed">
-                          {rule}
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
+                   {selectedAck.content.rules && (
+                     <div className="text-right" dir="rtl">
+                       <ol className="list-decimal list-inside space-y-2 text-gray-800">
+                         {selectedAck.content.rules.map((rule, index) => (
+                           <li key={index} className="leading-relaxed">
+                             {rule}
+                           </li>
+                         ))}
+                       </ol>
+                     </div>
+                   )}
                 </div>
 
                 {/* Notice */}
@@ -379,6 +440,65 @@ export const AcknowledgmentSystem = () => {
                 </div>
               </>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add New Type Modal */}
+      <Dialog open={isAddTypeModalOpen} onOpenChange={setIsAddTypeModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">Add New Acknowledgment Type</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <div>
+                <Label className="text-sm font-medium text-gray-700">Title *</Label>
+                <Input
+                  value={newTypeData.title}
+                  onChange={(e) => setNewTypeData({...newTypeData, title: e.target.value})}
+                  placeholder="Enter acknowledgment title"
+                  className="border-gray-300"
+                />
+              </div>
+              
+              <div>
+                <Label className="text-sm font-medium text-gray-700">Description *</Label>
+                <Input
+                  value={newTypeData.description}
+                  onChange={(e) => setNewTypeData({...newTypeData, description: e.target.value})}
+                  placeholder="Enter brief description"
+                  className="border-gray-300"
+                />
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium text-gray-700">Content (Optional)</Label>
+                <Textarea
+                  value={newTypeData.content}
+                  onChange={(e) => setNewTypeData({...newTypeData, content: e.target.value})}
+                  placeholder="Enter detailed acknowledgment content"
+                  className="border-gray-300 min-h-[120px]"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <Button 
+                onClick={handleAddNewType} 
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6"
+              >
+                Add Type
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => setIsAddTypeModalOpen(false)}
+                className="px-6"
+              >
+                Cancel
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
