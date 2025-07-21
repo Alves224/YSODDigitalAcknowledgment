@@ -1252,11 +1252,55 @@
                 </div>
                 
                 <div class="modal-actions">
+                    <button onclick="exportSubmissionPDF('${submission.id}')" class="btn btn-blue">📄 Export PDF</button>
                     <button onclick="closeSubmissionModal()" class="btn btn-outline">Close</button>
                 </div>
             `;
             
             submissionModal.style.display = 'block';
+        }
+
+        // Export submission as PDF
+        function exportSubmissionPDF(submissionId) {
+            const submission = submissions.find(s => s.id === submissionId);
+            if (!submission) return;
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Add header
+            doc.setFontSize(20);
+            doc.text('Digital Acknowledgment Certificate', 20, 30);
+            
+            // Add submission details
+            doc.setFontSize(14);
+            doc.text(submission.type, 20, 55);
+            
+            doc.setFontSize(12);
+            doc.text(`Request No: ${submission.requestNo}`, 20, 75);
+            doc.text(`Employee Name: ${submission.employeeName}`, 20, 90);
+            doc.text(`Submission Date: ${submission.date}`, 20, 105);
+            doc.text(`Status: Acknowledged`, 20, 120);
+            
+            // Add acknowledgment statement
+            doc.text('Acknowledgment Statement:', 20, 140);
+            const statement = 'I acknowledge that I have read, understood and agree to the above policies and procedures';
+            const splitStatement = doc.splitTextToSize(statement, 170);
+            doc.text(splitStatement, 20, 155);
+            
+            // Add signature line
+            doc.text('Digital Signature: ✓ Acknowledged', 20, 185);
+            doc.text(`Generated on: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, 20, 200);
+            
+            // Add footer
+            doc.setFontSize(10);
+            doc.text('This is a digitally generated acknowledgment certificate.', 20, 280);
+            
+            // Save the PDF
+            const fileName = `${submission.type.replace(/\s+/g, '_')}_${submission.employeeName.replace(/\s+/g, '_')}_${submission.requestNo}.pdf`;
+            doc.save(fileName);
+            
+            showToast('PDF exported successfully!', 'success');
         }
 
         // Close submission modal
