@@ -7,7 +7,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { FileText, Shield, Laptop, Users, AlertTriangle, CheckCircle, Plus, Trash2 } from 'lucide-react';
+import { FileText, Shield, Laptop, Users, AlertTriangle, CheckCircle, Plus, Trash2, Download } from 'lucide-react';
+import jsPDF from 'jspdf';
 
 interface AcknowledgmentItem {
   id: string;
@@ -80,6 +81,8 @@ export const AcknowledgmentSystem = () => {
   const [selectedType, setSelectedType] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddTypeModalOpen, setIsAddTypeModalOpen] = useState(false);
+  const [isSubmissionModalOpen, setIsSubmissionModalOpen] = useState(false);
+  const [selectedSubmission, setSelectedSubmission] = useState<AcknowledgmentItem | null>(null);
   const [acknowledgmentTypes, setAcknowledgmentTypes] = useState<AcknowledgmentType[]>(defaultAcknowledgmentTypes);
   const [formData, setFormData] = useState({
     requestNo: '',
@@ -196,6 +199,83 @@ export const AcknowledgmentSystem = () => {
     });
   };
 
+  const handleOpenSubmission = (submission: AcknowledgmentItem) => {
+    setSelectedSubmission(submission);
+    setIsSubmissionModalOpen(true);
+  };
+
+  const exportSubmissionToPDF = (submission: AcknowledgmentItem) => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.width;
+    
+    // Header
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    doc.text('YSOD Digital Acknowledgment Form Hub', pageWidth / 2, 30, { align: 'center' });
+    
+    // Submission details
+    doc.setFontSize(16);
+    doc.text('Acknowledgment Submission', pageWidth / 2, 50, { align: 'center' });
+    
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    
+    let yPosition = 80;
+    doc.text(`Type: ${submission.type}`, 20, yPosition);
+    yPosition += 15;
+    doc.text(`Request No: ${submission.requestNo}`, 20, yPosition);
+    yPosition += 15;
+    doc.text(`Employee Name: ${submission.employeeName}`, 20, yPosition);
+    yPosition += 15;
+    doc.text(`Date: ${submission.date}`, 20, yPosition);
+    yPosition += 15;
+    doc.text(`Status: ${submission.acknowledged ? 'Acknowledged' : 'Not Acknowledged'}`, 20, yPosition);
+    
+    // Find the acknowledgment type details
+    const ackType = acknowledgmentTypes.find(type => type.title === submission.type);
+    if (ackType?.content) {
+      yPosition += 30;
+      doc.setFont('helvetica', 'bold');
+      doc.text('Content:', 20, yPosition);
+      yPosition += 15;
+      
+      doc.setFont('helvetica', 'normal');
+      if (ackType.content.description) {
+        const lines = doc.splitTextToSize(ackType.content.description, pageWidth - 40);
+        doc.text(lines, 20, yPosition);
+        yPosition += lines.length * 8;
+      }
+      
+      if (ackType.content.rules && ackType.content.rules.length > 0) {
+        yPosition += 10;
+        doc.setFont('helvetica', 'bold');
+        doc.text('Rules/Sections:', 20, yPosition);
+        yPosition += 15;
+        
+        doc.setFont('helvetica', 'normal');
+        ackType.content.rules.forEach((rule, index) => {
+          const ruleText = `${index + 1}. ${rule}`;
+          const lines = doc.splitTextToSize(ruleText, pageWidth - 40);
+          doc.text(lines, 20, yPosition);
+          yPosition += lines.length * 8 + 5;
+        });
+      }
+    }
+    
+    // Footer
+    yPosition += 30;
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(10);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 20, yPosition);
+    
+    doc.save(`acknowledgment_${submission.requestNo}.pdf`);
+    
+    toast({
+      title: "PDF Exported",
+      description: "Acknowledgment has been exported successfully.",
+    });
+  };
+
   const selectedAck = acknowledgmentTypes.find(t => t.id === selectedType);
 
   return (
@@ -271,7 +351,11 @@ export const AcknowledgmentSystem = () => {
             <CardContent>
               <div className="space-y-4">
                 {submissions.map((submission) => (
-                  <div key={submission.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div 
+                    key={submission.id} 
+                    className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                    onClick={() => handleOpenSubmission(submission)}
+                  >
                     <div>
                       <h3 className="font-medium">{submission.type}</h3>
                       <p className="text-muted-foreground text-sm">Request No: {submission.requestNo}</p>
@@ -608,6 +692,127 @@ export const AcknowledgmentSystem = () => {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Submission View Modal */}
+      <Dialog open={isSubmissionModalOpen} onOpenChange={setIsSubmissionModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          {selectedSubmission && (
+            <div className="bg-white p-8 space-y-6">
+              <DialogHeader>
+                <DialogTitle className="text-2xl flex items-center justify-between">
+                  {selectedSubmission.type}
+                  <Button
+                    onClick={() => exportSubmissionToPDF(selectedSubmission)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Export PDF
+                  </Button>
+                </DialogTitle>
+              </DialogHeader>
+              
+              <div className="space-y-6">
+                {/* Submission Info */}
+                <div className="bg-gray-50 p-6 space-y-4">
+                  <h3 className="font-semibold text-gray-700 bg-gray-200 px-3 py-2">Submission Information</h3>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Request No:</Label>
+                      <p className="text-gray-900">{selectedSubmission.requestNo}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Employee Name:</Label>
+                      <p className="text-gray-900">{selectedSubmission.employeeName}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Date:</Label>
+                      <p className="text-gray-900">{selectedSubmission.date}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Status:</Label>
+                      <span className="inline-flex items-center gap-1 text-success">
+                        <CheckCircle className="w-4 h-4" />
+                        Acknowledged
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Content Display */}
+                {(() => {
+                  const ackType = acknowledgmentTypes.find(type => type.title === selectedSubmission.type);
+                  if (ackType?.content) {
+                    return (
+                      <div className="space-y-6">
+                        {ackType.content.arabic && (
+                          <div className="text-center border-b pb-6">
+                            <h1 className="text-2xl font-bold text-red-600 mb-2" dir="rtl">
+                              {ackType.content.arabic}
+                            </h1>
+                            {ackType.content.subtitle && (
+                              <h2 className="text-lg text-gray-700">
+                                {ackType.content.subtitle}
+                              </h2>
+                            )}
+                          </div>
+                        )}
+
+                        {ackType.content.description && (
+                          <div className="text-right" dir="rtl">
+                            <p className="text-gray-800 leading-relaxed text-base whitespace-pre-line">
+                              {ackType.content.description}
+                            </p>
+                          </div>
+                        )}
+
+                        {ackType.content.rules && ackType.content.rules.length > 0 && (
+                          <div className="text-right" dir="rtl">
+                            <ol className="list-decimal list-inside space-y-2 text-gray-800">
+                              {ackType.content.rules.map((rule, index) => (
+                                <li key={index} className="leading-relaxed">
+                                  {rule}
+                                </li>
+                              ))}
+                            </ol>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+
+                <div className="bg-blue-50 border border-blue-200 rounded p-4">
+                  <div className="flex items-start gap-2">
+                    <div className="w-4 h-4 bg-blue-500 rounded-full flex-shrink-0 mt-1"></div>
+                    <p className="text-blue-800 text-sm">
+                      This acknowledgment has been digitally signed and recorded in the system.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <Button 
+                    onClick={() => exportSubmissionToPDF(selectedSubmission)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Export PDF
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsSubmissionModalOpen(false)}
+                    className="px-6"
+                  >
+                    Close
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
