@@ -723,20 +723,8 @@
     </style>
 </head>
 <body>
-    <!-- Login Screen -->
-    <div id="loginScreen" class="login-screen">
-        <div class="login-container">
-            <h1>📋 Digital Acknowledgment System</h1>
-            <div class="login-form">
-                <h2>Please Login</h2>
-                <input type="text" id="usernameInput" placeholder="Enter your username" class="form-input">
-                <button onclick="login()" class="btn btn-blue">Login</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Application (Hidden by default) -->
-    <div id="mainApp" style="display: none;">
+    <!-- Main Application -->
+    <div id="mainApp">
         <!-- Header -->
         <div class="header-container">
             <div class="header-content">
@@ -744,7 +732,7 @@
                 <div class="header-actions">
                     <span id="userWelcome" class="user-welcome"></span>
                     <button id="addNewTypeBtn" class="btn btn-blue" style="display: none;">+ Add New Type</button>
-                    <button onclick="logout()" class="btn btn-outline">Logout</button>
+                    
                 </div>
             </div>
         </div>
@@ -890,13 +878,11 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
         // Authentication & User Management
         let currentUser = null;
         let currentUserRole = null;
-        
-        // Admin users list (customize this based on your SharePoint list)
-        const adminUsers = ['admin', 'manager', 'supervisor', 'hr']; // Add your admin usernames here
         
         // Application State
         let acknowledgmentTypes = [
@@ -973,70 +959,60 @@
         const toastMessage = document.getElementById('toastMessage');
 
         // Initialize the application
-        document.addEventListener('DOMContentLoaded', function() {
-            checkLoginStatus();
+        $(document).ready(function() {
+            initializeApp();
         });
 
-        // Authentication Functions
-        function checkLoginStatus() {
-            const savedUser = localStorage.getItem('currentUser');
-            const savedRole = localStorage.getItem('currentUserRole');
-            
-            if (savedUser && savedRole) {
-                currentUser = savedUser;
-                currentUserRole = savedRole;
-                showMainApp();
-            } else {
-                showLoginScreen();
-            }
+        // Initialize Application with SharePoint Authentication
+        function initializeApp() {
+            getCurrentUserEmail(function(userEmail) {
+                currentUser = userEmail;
+                
+                // Check if user is admin by querying SharePoint list
+                checkAdminAccess(userEmail, function(isAdmin) {
+                    currentUserRole = isAdmin ? 'admin' : 'user';
+                    showMainApp();
+                    showToast(`Welcome ${userEmail}!`, 'success');
+                });
+            });
         }
 
-        function login() {
-            const username = document.getElementById('usernameInput').value.trim();
-            
-            if (!username) {
-                showToast('Please enter your username', 'error');
-                return;
-            }
-            
-            currentUser = username;
-            currentUserRole = adminUsers.includes(username.toLowerCase()) ? 'admin' : 'user';
-            
-            // Save to localStorage
-            localStorage.setItem('currentUser', currentUser);
-            localStorage.setItem('currentUserRole', currentUserRole);
-            
-            showToast(`Welcome ${username}!`, 'success');
-            showMainApp();
+        // Get current SharePoint user
+        function getCurrentUserEmail(callback) {
+            $.ajax({
+                url: _spPageContextInfo.webAbsoluteUrl + "/_api/web/currentuser",
+                method: "GET",
+                headers: { "Accept": "application/json;odata=verbose" },
+                success: function(data) {
+                    callback(data.d.Email || data.d.Title);
+                },
+                error: function(err) {
+                    console.error("Error getting current user:", err);
+                    showToast('Error getting user information', 'error');
+                    callback('Unknown User');
+                }
+            });
         }
 
-        function logout() {
-            currentUser = null;
-            currentUserRole = null;
-            
-            // Clear localStorage
-            localStorage.removeItem('currentUser');
-            localStorage.removeItem('currentUserRole');
-            
-            showLoginScreen();
-            showToast('Logged out successfully', 'success');
-        }
-
-        function showLoginScreen() {
-            document.getElementById('loginScreen').style.display = 'flex';
-            document.getElementById('mainApp').style.display = 'none';
-            document.getElementById('usernameInput').value = '';
-            
-            // Add Enter key support for login
-            document.getElementById('usernameInput').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    login();
+        // Check if user has admin access via SharePoint list
+        function checkAdminAccess(userEmail, callback) {
+            $.ajax({
+                url: _spPageContextInfo.webAbsoluteUrl + "/_api/web/lists/getbytitle('AdminUserAccess')/items?$filter=UserEmail eq '" + userEmail + "'",
+                method: "GET",
+                headers: { "Accept": "application/json;odata=verbose" },
+                success: function(data) {
+                    const isAdmin = data.d.results && data.d.results.length > 0;
+                    callback(isAdmin);
+                },
+                error: function(err) {
+                    console.error("Error checking admin access:", err);
+                    // If list doesn't exist or error occurs, treat as regular user
+                    callback(false);
                 }
             });
         }
 
         function showMainApp() {
-            document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('mainApp').style.display = 'block';
             
             // Update welcome message
@@ -1220,7 +1196,7 @@
                         
                         <div class="form-row">
                             <label class="form-label">Employee Name:</label>
-                            <input type="text" id="employeeNameInput" class="form-input" placeholder="Enter employee name" value="${currentFormData.employeeName}">
+                            <input type="text" id="employeeNameInput" class="form-input" value="${currentUser}" readonly>
                         </div>
                         
                         <div class="form-row">
@@ -1270,7 +1246,7 @@
                     
                     <div class="form-row">
                         <label class="form-label">Employee Name:</label>
-                        <input type="text" id="employeeNameInput" class="form-input" placeholder="Enter employee name" value="${currentFormData.employeeName}">
+                        <input type="text" id="employeeNameInput" class="form-input" value="${currentUser}" readonly>
                     </div>
                     
                     <div class="form-row">
@@ -1319,7 +1295,7 @@
             }, 100);
         }
 
-        // Submit acknowledgment
+        // Submit acknowledgment to SharePoint
         function submitAcknowledgment() {
             const requestNoInput = document.getElementById('requestNoInput');
             const employeeNameInput = document.getElementById('employeeNameInput');
@@ -1340,25 +1316,55 @@
             }
             
             const selectedType = acknowledgmentTypes.find(t => t.id === currentSelectedType);
-            const newSubmission = {
-                id: Date.now().toString(),
-                type: selectedType.title,
-                employeeName: currentFormData.employeeName,
-                requestNo: currentFormData.requestNo,
-                date: new Date().toLocaleDateString(),
-                acknowledged: currentFormData.acknowledged
+            
+            // Prepare data for SharePoint
+            const data = {
+                __metadata: { type: "SP.Data.AcknowledgmentSubmissionsListItem" },
+                Title: selectedType.title,
+                RequestNo: currentFormData.requestNo,
+                EmployeeName: currentFormData.employeeName,
+                EmployeeEmail: currentUser,
+                AcknowledgmentType: currentSelectedType,
+                Acknowledged: currentFormData.acknowledged,
+                SubmissionDate: new Date().toISOString()
             };
             
-            submissions.push(newSubmission);
-            closeAcknowledmentModal();
-            updateSubmissionsDisplay();
-            
-            // Update dashboard if admin
-            if (currentUserRole === 'admin') {
-                updateDashboard();
-            }
-            
-            showToast('Your acknowledgment has been successfully recorded.', 'success');
+            // Submit to SharePoint
+            $.ajax({
+                url: _spPageContextInfo.webAbsoluteUrl + "/_api/web/lists/getbytitle('AcknowledgmentSubmissions')/items",
+                type: "POST",
+                contentType: "application/json;odata=verbose",
+                data: JSON.stringify(data),
+                headers: {
+                    "Accept": "application/json;odata=verbose",
+                    "X-RequestDigest": _spPageContextInfo.formDigestValue
+                },
+                success: function() {
+                    const newSubmission = {
+                        id: Date.now().toString(),
+                        type: selectedType.title,
+                        employeeName: currentFormData.employeeName,
+                        requestNo: currentFormData.requestNo,
+                        date: new Date().toLocaleDateString(),
+                        acknowledged: currentFormData.acknowledged
+                    };
+                    
+                    submissions.push(newSubmission);
+                    closeAcknowledmentModal();
+                    updateSubmissionsDisplay();
+                    
+                    // Update dashboard if admin
+                    if (currentUserRole === 'admin') {
+                        updateDashboard();
+                    }
+                    
+                    showToast('Your acknowledgment has been successfully recorded.', 'success');
+                },
+                error: function(err) {
+                    console.error("Submission error:", err);
+                    showToast('Error submitting acknowledgment: ' + (err.responseJSON?.error?.message?.value || err.statusText), 'error');
+                }
+            });
         }
 
         // Download PDF function
