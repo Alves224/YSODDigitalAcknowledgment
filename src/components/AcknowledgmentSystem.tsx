@@ -7,7 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { FileText, Shield, Laptop, Users, AlertTriangle, CheckCircle, Plus, Trash2, Download } from 'lucide-react';
+import { FileText, Shield, Laptop, Users, AlertTriangle, CheckCircle, Plus, Trash2, Download, Search } from 'lucide-react';
 import jsPDF from 'jspdf';
 interface AcknowledgmentItem {
   id: string;
@@ -82,6 +82,7 @@ export const AcknowledgmentSystem = () => {
     sections: ['']
   });
   const [submissions, setSubmissions] = useState<AcknowledgmentItem[]>([]);
+  const [searchName, setSearchName] = useState<string>('');
   const {
     toast
   } = useToast();
@@ -250,6 +251,13 @@ export const AcknowledgmentSystem = () => {
       description: "Acknowledgment has been exported successfully."
     });
   };
+
+  // Filter submissions based on search name
+  const filteredSubmissions = submissions.filter(submission => 
+    searchName.trim() === '' || 
+    submission.employeeName.toLowerCase().includes(searchName.toLowerCase())
+  );
+
   const selectedAck = acknowledgmentTypes.find(t => t.id === selectedType);
   return <div className="min-h-screen bg-background">
       <div className="container mx-auto px-6 py-8">
@@ -300,25 +308,53 @@ export const AcknowledgmentSystem = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CheckCircle className="w-5 h-5" />
-                Recent Submissions
+                Your Submissions
               </CardTitle>
             </CardHeader>
             <CardContent>
+              {/* Search Field */}
+              <div className="mb-6">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                  <Input
+                    placeholder="Search by employee name to view your submissions..."
+                    value={searchName}
+                    onChange={(e) => setSearchName(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              {/* Submissions List */}
               <div className="space-y-4">
-                {submissions.map(submission => <div key={submission.id} className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => handleOpenSubmission(submission)}>
-                    <div>
-                      <h3 className="font-medium">{submission.type}</h3>
-                      <p className="text-muted-foreground text-sm">Request No: {submission.requestNo}</p>
-                      <p className="text-muted-foreground text-sm">Employee: {submission.employeeName}</p>
+                {filteredSubmissions.length > 0 ? (
+                  filteredSubmissions.map(submission => (
+                    <div key={submission.id} className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => handleOpenSubmission(submission)}>
+                      <div>
+                        <h3 className="font-medium">{submission.type}</h3>
+                        <p className="text-muted-foreground text-sm">Request No: {submission.requestNo}</p>
+                        <p className="text-muted-foreground text-sm">Employee: {submission.employeeName}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-muted-foreground text-sm">{submission.date}</p>
+                        <span className="inline-flex items-center gap-1 text-success text-sm">
+                          <CheckCircle className="w-4 h-4" />
+                          Acknowledged
+                        </span>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-muted-foreground text-sm">{submission.date}</p>
-                      <span className="inline-flex items-center gap-1 text-success text-sm">
-                        <CheckCircle className="w-4 h-4" />
-                        Acknowledged
-                      </span>
-                    </div>
-                  </div>)}
+                  ))
+                ) : searchName ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>No submissions found for "{searchName}"</p>
+                    <p className="text-sm">Try searching with a different employee name</p>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p>Enter an employee name to search for submissions</p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>}
