@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileText, Shield, Laptop, Users, AlertTriangle, CheckCircle, Plus, Trash2, Download, Search, BarChart3, UserCheck, Clock } from 'lucide-react';
+import { FileText, Shield, Laptop, Users, AlertTriangle, CheckCircle, Plus, Trash2, Download, Search, BarChart3, UserCheck, Clock, Moon, Sun } from 'lucide-react';
 import jsPDF from 'jspdf';
 interface AcknowledgmentItem {
   id: string;
@@ -95,6 +95,7 @@ export const AcknowledgmentSystem = () => {
   const [currentUser, setCurrentUser] = useState<string>('');
   const [userRole, setUserRole] = useState<UserRole>({ role: 'Employee' });
   const [activeTab, setActiveTab] = useState('acknowledgments');
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const { toast } = useToast();
 
   // Simulate SharePoint user detection and role checking
@@ -109,6 +110,13 @@ export const AcknowledgmentSystem = () => {
       ...prev,
       employeeName: simulatedUser
     }));
+
+    // Load dark mode preference
+    const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+    setIsDarkMode(savedDarkMode);
+    if (savedDarkMode) {
+      document.documentElement.classList.add('dark');
+    }
   }, []);
 
   const checkUserRole = async (userEmail: string) => {
@@ -130,6 +138,18 @@ export const AcknowledgmentSystem = () => {
         unit: empData?.unit,
         supervisorEmail: empData?.supervisor 
       });
+    }
+  };
+
+  const toggleDarkMode = () => {
+    const newDarkMode = !isDarkMode;
+    setIsDarkMode(newDarkMode);
+    localStorage.setItem('darkMode', newDarkMode.toString());
+    
+    if (newDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
     }
   };
   const handleTypeSelect = (typeId: string) => {
@@ -357,16 +377,31 @@ export const AcknowledgmentSystem = () => {
 
   const selectedAck = acknowledgmentTypes.find(t => t.id === selectedType);
   
-  return <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background transition-colors duration-300">
       <div className="container mx-auto px-6 py-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-4">
-            YSOD Digital Acknowledgment Form Hub
-          </h1>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            {userRole.role} Dashboard - {currentUser}
-          </p>
+        {/* Header with Dark Mode Toggle */}
+        <div className="flex justify-between items-center mb-8">
+          <div className="text-center flex-1">
+            <h1 className="text-4xl font-bold text-foreground mb-4">
+              YSOD Digital Acknowledgment Form Hub
+            </h1>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              {userRole.role} Dashboard - {currentUser}
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={toggleDarkMode}
+            className="ml-4 bg-background border-border hover:bg-accent"
+          >
+            {isDarkMode ? (
+              <Sun className="h-[1.2rem] w-[1.2rem] text-foreground" />
+            ) : (
+              <Moon className="h-[1.2rem] w-[1.2rem] text-foreground" />
+            )}
+            <span className="sr-only">Toggle dark mode</span>
+          </Button>
         </div>
 
         {/* Role-based Navigation */}
@@ -567,15 +602,15 @@ export const AcknowledgmentSystem = () => {
 
       {/* Acknowledgment Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <div className="bg-white p-8 space-y-6">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-background border-border">
+          <div className="bg-background p-8 space-y-6">
             {selectedAck?.id === 'remote-work' && selectedAck.content ? <>
                 {/* Header with Arabic title */}
-                <div className="text-center border-b pb-6">
+                <div className="text-center border-b border-border pb-6">
                   <h1 className="text-2xl font-bold text-red-600 mb-2" dir="rtl">
                     {selectedAck.content.arabic}
                   </h1>
-                  <h2 className="text-lg text-gray-700">
+                  <h2 className="text-lg text-foreground">
                     {selectedAck.content.subtitle}
                   </h2>
                 </div>
@@ -583,13 +618,13 @@ export const AcknowledgmentSystem = () => {
                 {/* Content */}
                 <div className="space-y-6">
                   <div className="text-right" dir="rtl">
-                    <p className="text-gray-800 leading-relaxed text-base">
+                    <p className="text-foreground leading-relaxed text-base">
                       {selectedAck.content.description}
                     </p>
                   </div>
 
                    {selectedAck.content.rules && <div className="text-right" dir="rtl">
-                       <ol className="list-decimal list-inside space-y-2 text-gray-800">
+                       <ol className="list-decimal list-inside space-y-2 text-foreground">
                          {selectedAck.content.rules.map((rule, index) => <li key={index} className="leading-relaxed">
                              {rule}
                            </li>)}
@@ -608,27 +643,27 @@ export const AcknowledgmentSystem = () => {
                 </div>
 
                 {/* Form */}
-                <div className="bg-gray-50 p-6 space-y-4">
-                  <h3 className="font-semibold text-gray-700 bg-gray-200 px-3 py-2">Request Information</h3>
+                <div className="bg-muted/50 p-6 space-y-4">
+                  <h3 className="font-semibold text-foreground bg-muted px-3 py-2 rounded">Request Information</h3>
                   
                   <div className="grid grid-cols-1 gap-4">
                     <div className="grid grid-cols-3 items-center gap-4">
-                      <Label className="text-sm font-medium text-gray-700">Request No:</Label>
+                      <Label className="text-sm font-medium text-foreground">Request No:</Label>
                       <div className="col-span-2">
                         <Input value={formData.requestNo} onChange={e => setFormData({
                       ...formData,
                       requestNo: e.target.value
-                    })} className="border-gray-300" />
+                    })} className="border-border bg-background" />
                       </div>
                     </div>
                     
                     <div className="grid grid-cols-3 items-center gap-4">
-                      <Label className="text-sm font-medium text-gray-700">Employee Name:</Label>
+                      <Label className="text-sm font-medium text-foreground">Employee Name:</Label>
                       <div className="col-span-2">
                         <Input value={formData.employeeName} onChange={e => setFormData({
                       ...formData,
                       employeeName: e.target.value
-                    })} className="border-gray-300" placeholder="Enter employee name" />
+                    })} className="border-border bg-background" placeholder="Enter employee name" />
                       </div>
                     </div>
 
