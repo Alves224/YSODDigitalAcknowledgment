@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -6,16 +6,33 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { FileText, Shield, Laptop, Users, AlertTriangle, CheckCircle, Plus, Trash2, Download, Search } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { UserSwitcher } from '@/components/UserSwitcher';
+import { RoleBasedDashboard } from '@/components/RoleBasedDashboard';
+import { LoginForm } from '@/components/LoginForm';
+import { FileText, Shield, Laptop, Users, AlertTriangle, CheckCircle, Plus, Trash2, Download, Search, Mail, Send } from 'lucide-react';
 import jsPDF from 'jspdf';
 interface AcknowledgmentItem {
   id: string;
   type: string;
   employeeName: string;
+  employeeEmail: string;
   requestNo: string;
   date: string;
   acknowledged: boolean;
+  supervisorEmail?: string;
+  unit?: string;
+  status: 'Pending' | 'Acknowledged' | 'Completed';
+}
+
+interface EmailNotification {
+  to: string;
+  type: 'employee_confirmation' | 'supervisor_notify' | 'admin_global';
+  subject: string;
+  body: string;
+  submissionData: AcknowledgmentItem;
 }
 interface AcknowledgmentType {
   id: string;
@@ -64,12 +81,15 @@ const defaultAcknowledgmentTypes: AcknowledgmentType[] = [{
   icon: Users
 }];
 export const AcknowledgmentSystem = () => {
+  const { currentUser, isLoading, mockSupervisorList } = useAuth();
   const [selectedType, setSelectedType] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddTypeModalOpen, setIsAddTypeModalOpen] = useState(false);
   const [isSubmissionModalOpen, setIsSubmissionModalOpen] = useState(false);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [selectedSubmission, setSelectedSubmission] = useState<AcknowledgmentItem | null>(null);
   const [acknowledgmentTypes, setAcknowledgmentTypes] = useState<AcknowledgmentType[]>(defaultAcknowledgmentTypes);
+  const [emailNotifications, setEmailNotifications] = useState<EmailNotification[]>([]);
   const [formData, setFormData] = useState({
     requestNo: '',
     employeeName: '',
@@ -83,9 +103,17 @@ export const AcknowledgmentSystem = () => {
   });
   const [submissions, setSubmissions] = useState<AcknowledgmentItem[]>([]);
   const [searchName, setSearchName] = useState<string>('');
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
+
+  // Auto-fill employee name based on current user
+  useEffect(() => {
+    if (currentUser && currentUser.role === 'Employee') {
+      setFormData(prev => ({
+        ...prev,
+        employeeName: currentUser.name
+      }));
+    }
+  }, [currentUser, selectedType]);
   const handleTypeSelect = (typeId: string) => {
     setSelectedType(typeId);
     setFormData({
@@ -104,53 +132,115 @@ export const AcknowledgmentSystem = () => {
       });
       return;
     }
+
+    if (!currentUser) return;
+
+    // Find supervisor and unit info
+    const employeeInfo = mockSupervisorList.find(item => 
+      item.employeeName === formData.employeeName
+    );
+
     const newSubmission: AcknowledgmentItem = {
       id: Date.now().toString(),
       type: acknowledgmentTypes.find(t => t.id === selectedType)?.title || '',
       employeeName: formData.employeeName,
+      employeeEmail: currentUser.email,
       requestNo: formData.requestNo,
       date: new Date().toLocaleDateString(),
-      acknowledged: formData.acknowledged
+      acknowledged: formData.acknowledged,
+      supervisorEmail: employeeInfo?.supervisorEmail || currentUser.supervisorEmail,
+      unit: employeeInfo?.unit || currentUser.unit,
+      status: 'Acknowledged'
     };
+
     setSubmissions([...submissions, newSubmission]);
+    
+    // Trigger email notifications
+    triggerEmailNotifications(newSubmission);
+    
     setIsModalOpen(false);
     toast({
       title: "Acknowledgment Submitted",
-      description: "Your acknowledgment has been successfully recorded."
+      description: "Your acknowledgment has been successfully recorded. Email notifications have been sent."
     });
   };
-  const handleAddNewType = () => {
-    if (!newTypeData.title || !newTypeData.description) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all required fields.",
-        variant: "destructive"
+
+  const triggerEmailNotifications = (submission: AcknowledgmentItem) => {
+    const notifications: EmailNotification[] = [];
+
+    // 1. Confirmation email to employee
+    notifications.push({
+      to: submission.employeeEmail,
+      type: 'employee_confirmation',
+      subject: `Acknowledgment Confirmation - ${submission.requestNo}`,
+      body: `Dear ${submission.employeeName},
+
+Your acknowledgment submission has been successfully received and processed.
+
+Details:
+- Type: ${submission.type}
+- Request No: ${submission.requestNo}
+- Date: ${submission.date}
+- Status: ${submission.status}
+
+Thank you for your compliance.
+
+Best regards,
+YSOD Digital Acknowledgment System`,
+      submissionData: submission
+    });
+
+    // 2. Notification to supervisor
+    if (submission.supervisorEmail) {
+      notifications.push({
+        to: submission.supervisorEmail,
+        type: 'supervisor_notify',
+        subject: `Team Member Acknowledgment - ${submission.employeeName}`,
+        body: `Dear Supervisor,
+
+Your team member ${submission.employeeName} has submitted a new acknowledgment.
+
+Details:
+- Employee: ${submission.employeeName}
+- Type: ${submission.type}
+- Request No: ${submission.requestNo}
+- Unit: ${submission.unit}
+- Date: ${submission.date}
+
+Please review in the system dashboard.
+
+Best regards,
+YSOD Digital Acknowledgment System`,
+        submissionData: submission
       });
-      return;
     }
-    const newType: AcknowledgmentType = {
-      id: `custom-${Date.now()}`,
-      title: newTypeData.title,
-      description: newTypeData.description,
-      icon: FileText,
-      content: {
-        description: newTypeData.content,
-        rules: newTypeData.sections.filter(section => section.trim() !== '')
-      }
-    };
-    setAcknowledgmentTypes([...acknowledgmentTypes, newType]);
-    setNewTypeData({
-      title: '',
-      description: '',
-      content: '',
-      sections: ['']
-    });
-    setIsAddTypeModalOpen(false);
-    toast({
-      title: "Acknowledgment Type Added",
-      description: "New acknowledgment type has been created successfully."
-    });
+
+    // 3. Global notification to all admins (optional)
+    if (currentUser?.role !== 'Admin') {
+      notifications.push({
+        to: 'amer.alsomali@domain.com', // Admin email
+        type: 'admin_global',
+        subject: `New Acknowledgment Submission - ${submission.requestNo}`,
+        body: `Dear Admin,
+
+A new acknowledgment has been submitted in the system.
+
+Details:
+- Employee: ${submission.employeeName} (${submission.employeeEmail})
+- Supervisor: ${submission.supervisorEmail}
+- Type: ${submission.type}
+- Unit: ${submission.unit}
+- Date: ${submission.date}
+
+Best regards,
+YSOD Digital Acknowledgment System`,
+        submissionData: submission
+      });
+    }
+
+    setEmailNotifications(prev => [...prev, ...notifications]);
   };
+// Moved handleAddNewType function above handleDeleteType
   const addSection = () => {
     setNewTypeData({
       ...newTypeData,
@@ -173,10 +263,62 @@ export const AcknowledgmentSystem = () => {
     });
   };
   const handleDeleteType = (typeId: string) => {
+    if (currentUser?.role !== 'Admin') {
+      toast({
+        title: "Access Denied",
+        description: "Only administrators can delete acknowledgment types.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setAcknowledgmentTypes(acknowledgmentTypes.filter(type => type.id !== typeId));
     toast({
       title: "Acknowledgment Deleted",
       description: "Acknowledgment type has been deleted successfully."
+    });
+  };
+
+  const handleAddNewType = () => {
+    if (currentUser?.role !== 'Admin') {
+      toast({
+        title: "Access Denied",
+        description: "Only administrators can add new acknowledgment types.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!newTypeData.title || !newTypeData.description) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const newType: AcknowledgmentType = {
+      id: `custom-${Date.now()}`,
+      title: newTypeData.title,
+      description: newTypeData.description,
+      icon: FileText,
+      content: {
+        description: newTypeData.content,
+        rules: newTypeData.sections.filter(section => section.trim() !== '')
+      }
+    };
+    setAcknowledgmentTypes([...acknowledgmentTypes, newType]);
+    setNewTypeData({
+      title: '',
+      description: '',
+      content: '',
+      sections: ['']
+    });
+    setIsAddTypeModalOpen(false);
+    toast({
+      title: "Acknowledgment Type Added",
+      description: "New acknowledgment type has been created successfully."
     });
   };
   const handleOpenSubmission = (submission: AcknowledgmentItem) => {
@@ -252,112 +394,229 @@ export const AcknowledgmentSystem = () => {
     });
   };
 
-  // Filter submissions based on search name
-  const filteredSubmissions = submissions.filter(submission => 
-    searchName.trim() === '' || 
-    submission.employeeName.toLowerCase().includes(searchName.toLowerCase())
-  );
+  // Filter submissions based on search name and user role
+  const getFilteredSubmissions = () => {
+    let filtered = submissions;
+    
+    // Role-based filtering
+    if (currentUser?.role === 'Employee') {
+      filtered = submissions.filter(sub => sub.employeeEmail === currentUser.email);
+    } else if (currentUser?.role === 'Supervisor') {
+      const supervisorUnits = mockSupervisorList
+        .filter(item => item.supervisorEmail === currentUser.email)
+        .map(item => item.unit);
+      filtered = submissions.filter(sub => supervisorUnits.includes(sub.unit || ''));
+    }
+    
+    // Search filtering
+    if (searchName.trim() !== '') {
+      filtered = filtered.filter(submission =>
+        submission.employeeName.toLowerCase().includes(searchName.toLowerCase())
+      );
+    }
+    
+    return filtered;
+  };
 
   const selectedAck = acknowledgmentTypes.find(t => t.id === selectedType);
+
+  // Show loading state
+  if (isLoading) {
+    return <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto mb-4"></div>
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    </div>;
+  }
+
+  // Show login form if not authenticated
+  if (!currentUser) {
+    return <LoginForm />;
+  }
+
   return <div className="min-h-screen bg-background">
       <div className="container mx-auto px-6 py-8">
+        {/* User Switcher */}
+        <UserSwitcher />
+
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-foreground mb-4">
             YSOD Digital Acknowledgment Form Hub
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Select the type of acknowledgment you need to complete
+            {currentUser.role === 'Admin' ? 'Full system administration and management' :
+             currentUser.role === 'Supervisor' ? 'Manage your team acknowledgments and submissions' :
+             'Select the type of acknowledgment you need to complete'}
           </p>
         </div>
 
-        {/* Add New Type Button */}
-        <div className="flex justify-end mb-6">
-          <Button onClick={() => setIsAddTypeModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
-            <Plus className="w-4 h-4 mr-2" />
-            Add New Acknowledgment Type
-          </Button>
-        </div>
+        {/* Main Content Tabs */}
+        <Tabs defaultValue="dashboard" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+            <TabsTrigger value="submit">Submit Acknowledgment</TabsTrigger>
+            <TabsTrigger value="emails">Email Notifications</TabsTrigger>
+          </TabsList>
 
-        {/* Acknowledgment Types Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {acknowledgmentTypes.map(type => {
-          const IconComponent = type.icon;
-          return <Card key={type.id} className="border hover:shadow-md transition-all duration-200 cursor-pointer hover:border-primary/50" onClick={() => handleTypeSelect(type.id)}>
-                <CardHeader className="text-center relative">
-                  {type.id.startsWith('custom-') && <Button variant="ghost" size="sm" className="absolute top-2 right-2 h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50" onClick={e => {
-                e.stopPropagation();
-                handleDeleteType(type.id);
-              }}>
-                      <Trash2 className="w-4 h-4" />
-                    </Button>}
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                    <IconComponent className="w-8 h-8 text-primary" />
-                  </div>
-                  <CardTitle className="text-lg">{type.title}</CardTitle>
-                  <p className="text-muted-foreground text-sm">
-                    {type.description}
-                  </p>
-                </CardHeader>
-              </Card>;
-        })}
-        </div>
+          {/* Dashboard Tab */}
+          <TabsContent value="dashboard">
+            <RoleBasedDashboard />
+          </TabsContent>
 
-        {/* Recent Submissions */}
-        {submissions.length > 0 && <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5" />
-                Your Submissions
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {/* Search Field */}
-              <div className="mb-6">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                  <Input
-                    placeholder="Search by employee name to view your submissions..."
-                    value={searchName}
-                    onChange={(e) => setSearchName(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
+          {/* Submit Acknowledgment Tab */}
+          <TabsContent value="submit" className="space-y-6">
+            
+            {/* Add New Type Button - Admin Only */}
+            {currentUser.role === 'Admin' && (
+              <div className="flex justify-end mb-6">
+                <Button onClick={() => setIsAddTypeModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add New Acknowledgment Type
+                </Button>
               </div>
+            )}
 
-              {/* Submissions List */}
-              <div className="space-y-4">
-                {filteredSubmissions.length > 0 ? (
-                  filteredSubmissions.map(submission => (
-                    <div key={submission.id} className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => handleOpenSubmission(submission)}>
-                      <div>
-                        <h3 className="font-medium">{submission.type}</h3>
-                        <p className="text-muted-foreground text-sm">Request No: {submission.requestNo}</p>
-                        <p className="text-muted-foreground text-sm">Employee: {submission.employeeName}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-muted-foreground text-sm">{submission.date}</p>
-                        <span className="inline-flex items-center gap-1 text-success text-sm">
-                          <CheckCircle className="w-4 h-4" />
-                          Acknowledged
-                        </span>
-                      </div>
+            {/* Acknowledgment Types Grid */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+              {acknowledgmentTypes.map(type => {
+                const IconComponent = type.icon;
+                return <Card key={type.id} className="border hover:shadow-md transition-all duration-200 cursor-pointer hover:border-primary/50" onClick={() => handleTypeSelect(type.id)}>
+                  <CardHeader className="text-center relative">
+                    {type.id.startsWith('custom-') && currentUser.role === 'Admin' && (
+                      <Button variant="ghost" size="sm" className="absolute top-2 right-2 h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50" onClick={e => {
+                        e.stopPropagation();
+                        handleDeleteType(type.id);
+                      }}>
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                      <IconComponent className="w-8 h-8 text-primary" />
                     </div>
-                  ))
-                ) : searchName ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>No submissions found for "{searchName}"</p>
-                    <p className="text-sm">Try searching with a different employee name</p>
+                    <CardTitle className="text-lg">{type.title}</CardTitle>
+                    <p className="text-muted-foreground text-sm">
+                      {type.description}
+                    </p>
+                  </CardHeader>
+                </Card>;
+              })}
+            </div>
+
+            {/* Recent Submissions */}
+            {submissions.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5" />
+                    {currentUser.role === 'Employee' ? 'Your Submissions' :
+                     currentUser.role === 'Supervisor' ? 'Team Submissions' : 'All Submissions'}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {/* Search Field */}
+                  <div className="mb-6">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                      <Input
+                        placeholder={`Search by employee name...`}
+                        value={searchName}
+                        onChange={(e) => setSearchName(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Submissions List */}
+                  <div className="space-y-4">
+                    {getFilteredSubmissions().length > 0 ? (
+                      getFilteredSubmissions().map(submission => (
+                        <div key={submission.id} className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => handleOpenSubmission(submission)}>
+                          <div>
+                            <h3 className="font-medium">{submission.type}</h3>
+                            <p className="text-muted-foreground text-sm">Request No: {submission.requestNo}</p>
+                            <p className="text-muted-foreground text-sm">Employee: {submission.employeeName}</p>
+                            {currentUser.role !== 'Employee' && (
+                              <p className="text-muted-foreground text-sm">Unit: {submission.unit}</p>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <p className="text-muted-foreground text-sm">{submission.date}</p>
+                            <span className="inline-flex items-center gap-1 text-success text-sm">
+                              <CheckCircle className="w-4 h-4" />
+                              {submission.status}
+                            </span>
+                          </div>
+                        </div>
+                      ))
+                    ) : searchName ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                        <p>No submissions found for "{searchName}"</p>
+                        <p className="text-sm">Try searching with a different employee name</p>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <p>No submissions found</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* Email Notifications Tab */}
+          <TabsContent value="emails" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Mail className="w-5 h-5" />
+                    Email Notifications Log
+                  </CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEmailModalOpen(true)}
+                  >
+                    <Send className="w-4 h-4 mr-2" />
+                    View All Emails
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {emailNotifications.length > 0 ? (
+                  <div className="space-y-4">
+                    {emailNotifications.slice(-5).reverse().map((email, index) => (
+                      <div key={index} className="p-4 border rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <Mail className="w-4 h-4" />
+                            <span className="font-medium">{email.subject}</span>
+                          </div>
+                          <span className="text-sm text-muted-foreground">
+                            To: {email.to}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {email.body.substring(0, 150)}...
+                        </p>
+                      </div>
+                    ))}
                   </div>
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
-                    <p>Enter an employee name to search for submissions</p>
+                    <Mail className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>No email notifications yet</p>
+                    <p className="text-sm">Email notifications will appear here when acknowledgments are submitted</p>
                   </div>
                 )}
-              </div>
-            </CardContent>
-          </Card>}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Acknowledgment Modal */}
@@ -420,10 +679,16 @@ export const AcknowledgmentSystem = () => {
                     <div className="grid grid-cols-3 items-center gap-4">
                       <Label className="text-sm font-medium text-gray-700">Employee Name:</Label>
                       <div className="col-span-2">
-                        <Input value={formData.employeeName} onChange={e => setFormData({
-                      ...formData,
-                      employeeName: e.target.value
-                    })} className="border-gray-300" placeholder="Enter employee name" />
+                        <Input 
+                          value={formData.employeeName} 
+                          onChange={e => setFormData({
+                            ...formData,
+                            employeeName: e.target.value
+                          })} 
+                          className="border-gray-300" 
+                          placeholder="Enter employee name"
+                          disabled={currentUser?.role === 'Employee'}
+                        />
                       </div>
                     </div>
 
