@@ -575,135 +575,6 @@
             border-left: 4px solid #dc2626;
         }
 
-        /* Login Screen */
-        .login-screen {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
-        .login-container {
-            background: white;
-            padding: 3rem 2rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            width: 400px;
-            max-width: 90%;
-        }
-
-        .login-container h1 {
-            color: #1f2937;
-            margin-bottom: 2rem;
-            font-size: 2rem;
-        }
-
-        .login-form h2 {
-            color: #374151;
-            margin-bottom: 1.5rem;
-            font-size: 1.25rem;
-        }
-
-        /* Header for logged in users */
-        .header-container {
-            background: white;
-            border-bottom: 1px solid #e2e8f0;
-            padding: 1rem 0;
-            margin-bottom: 2rem;
-        }
-
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1.5rem;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #1f2937;
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .user-welcome {
-            color: #6b7280;
-            font-size: 0.875rem;
-        }
-
-        /* Dashboard */
-        .dashboard {
-            margin-bottom: 2rem;
-        }
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 0.5rem;
-            border: 1px solid #e2e8f0;
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #1f2937;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-label {
-            color: #6b7280;
-            font-size: 0.875rem;
-        }
-
-        .stat-icon {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-        }
-
-        /* Navigation Tabs */
-        .nav-tabs {
-            display: flex;
-            border-bottom: 2px solid #e2e8f0;
-            margin-bottom: 1.5rem;
-        }
-
-        .nav-tab {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            background: none;
-            cursor: pointer;
-            font-weight: 500;
-            color: #6b7280;
-            border-bottom: 2px solid transparent;
-            transition: all 0.2s;
-        }
-
-        .nav-tab.active {
-            color: #2563eb;
-            border-bottom-color: #2563eb;
-        }
-
-        .nav-tab:hover {
-            color: #374151;
-        }
-
         /* Animations */
         @keyframes fadeIn {
             from { opacity: 0; }
@@ -723,84 +594,40 @@
     </style>
 </head>
 <body>
-    <!-- Main Application -->
-    <div id="mainApp">
-        <!-- Header -->
-        <div class="header-container">
-            <div class="header-content">
-                <h1 class="logo">📋 Digital Acknowledgment System</h1>
-                <div class="header-actions">
-                    <span id="userWelcome" class="user-welcome"></span>
-                    <button id="addNewTypeBtn" class="btn btn-blue" style="display: none;">+ Add New Type</button>
-                    
-                </div>
-            </div>
+    <div class="container">
+        <div class="header">
+            <h1>Digital Acknowledgment System</h1>
+            <p>Select an acknowledgment type to complete your digital acknowledgment and confirmation</p>
         </div>
 
-        <div class="container">
-            <!-- Admin Dashboard -->
-            <div id="adminDashboard" class="dashboard" style="display: none;">
-                <div class="dashboard-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon">📊</div>
-                        <div class="stat-number" id="totalAcknowledgments">0</div>
-                        <div class="stat-label">Total Acknowledgments</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">👥</div>
-                        <div class="stat-number" id="totalUsers">0</div>
-                        <div class="stat-label">Active Users</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">📋</div>
-                        <div class="stat-number" id="totalTypes">0</div>
-                        <div class="stat-label">Acknowledgment Types</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">📅</div>
-                        <div class="stat-number" id="todaySubmissions">0</div>
-                        <div class="stat-label">Today's Submissions</div>
-                    </div>
+        <div class="add-button-container">
+            <button id="addNewTypeBtn" class="btn btn-blue">
+                ➕ Add New Acknowledgment Type
+            </button>
+        </div>
+
+        <div id="acknowledgmentGrid" class="acknowledgment-grid"></div>
+
+        <div id="submissionsSection" class="submissions-section" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        📋 Your Submissions
+                    </h2>
                 </div>
-            </div>
-
-            <!-- Navigation Tabs -->
-            <div class="nav-tabs">
-                <button class="nav-tab active" onclick="switchTab('acknowledgments')" id="acknowledgementsTab">
-                    📋 Acknowledgments
-                </button>
-                <button class="nav-tab" onclick="switchTab('submissions')" id="submissionsTab">
-                    📄 My Submissions
-                </button>
-            </div>
-
-            <!-- Acknowledgments Section -->
-            <div id="acknowledgementsSection">
-                <div id="acknowledgmentGrid" class="acknowledgment-grid"></div>
-            </div>
-
-            <!-- Submissions Section -->
-            <div id="submissionsSection" style="display: none;">
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">
-                            📋 <span id="submissionsSectionTitle">Your Submissions</span>
-                        </h2>
-                    </div>
-                    <div class="card-content">
-                        <div class="search-container">
-                            <div class="search-input-wrapper">
-                                <span class="search-icon">🔍</span>
-                                <input 
-                                    type="text" 
-                                    id="searchInput" 
-                                    class="search-input" 
-                                    placeholder="Search by employee name..."
-                                >
-                            </div>
+                <div class="card-content">
+                    <div class="search-container">
+                        <div class="search-input-wrapper">
+                            <span class="search-icon">🔍</span>
+                            <input 
+                                type="text" 
+                                id="searchInput" 
+                                class="search-input" 
+                                placeholder="Search by employee name..."
+                            >
                         </div>
-                        <div id="submissionsList" class="submissions-list"></div>
                     </div>
+                    <div id="submissionsList" class="submissions-list"></div>
                 </div>
             </div>
         </div>
@@ -878,12 +705,7 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
-        // Authentication & User Management
-        let currentUser = null;
-        let currentUserRole = null;
-        
         // Application State
         let acknowledgmentTypes = [
             {
@@ -938,15 +760,6 @@
             acknowledged: false
         };
 
-        // Reset form data with current user
-        function resetFormData() {
-            currentFormData = {
-                requestNo: '',
-                employeeName: currentUser || '',
-                acknowledged: false
-            };
-        }
-
         // DOM Elements
         const acknowledgmentGrid = document.getElementById('acknowledgmentGrid');
         const submissionsSection = document.getElementById('submissionsSection');
@@ -959,114 +772,11 @@
         const toastMessage = document.getElementById('toastMessage');
 
         // Initialize the application
-        $(document).ready(function() {
-            initializeApp();
-        });
-
-        // Initialize Application with SharePoint Authentication
-        function initializeApp() {
-            getCurrentUserEmail(function(userEmail) {
-                currentUser = userEmail;
-                
-                // Check if user is admin by querying SharePoint list
-                checkAdminAccess(userEmail, function(isAdmin) {
-                    currentUserRole = isAdmin ? 'admin' : 'user';
-                    showMainApp();
-                    showToast(`Welcome ${userEmail}!`, 'success');
-                });
-            });
-        }
-
-        // Get current SharePoint user
-        function getCurrentUserEmail(callback) {
-            $.ajax({
-                url: _spPageContextInfo.webAbsoluteUrl + "/_api/web/currentuser",
-                method: "GET",
-                headers: { "Accept": "application/json;odata=verbose" },
-                success: function(data) {
-                    callback(data.d.Email || data.d.Title);
-                },
-                error: function(err) {
-                    console.error("Error getting current user:", err);
-                    showToast('Error getting user information', 'error');
-                    callback('Unknown User');
-                }
-            });
-        }
-
-        // Check if user has admin access via SharePoint list
-        function checkAdminAccess(userEmail, callback) {
-            $.ajax({
-                url: _spPageContextInfo.webAbsoluteUrl + "/_api/web/lists/getbytitle('AdminUserAccess')/items?$filter=UserEmail eq '" + userEmail + "'",
-                method: "GET",
-                headers: { "Accept": "application/json;odata=verbose" },
-                success: function(data) {
-                    const isAdmin = data.d.results && data.d.results.length > 0;
-                    callback(isAdmin);
-                },
-                error: function(err) {
-                    console.error("Error checking admin access:", err);
-                    // If list doesn't exist or error occurs, treat as regular user
-                    callback(false);
-                }
-            });
-        }
-
-        function showMainApp() {
-            document.getElementById('mainApp').style.display = 'block';
-            
-            // Update welcome message
-            document.getElementById('userWelcome').textContent = `Welcome, ${currentUser} (${currentUserRole})`;
-            
-            // Show/hide admin features
-            if (currentUserRole === 'admin') {
-                document.getElementById('addNewTypeBtn').style.display = 'inline-flex';
-                document.getElementById('adminDashboard').style.display = 'block';
-                document.getElementById('submissionsSectionTitle').textContent = 'All Submissions';
-                updateDashboard();
-            } else {
-                document.getElementById('addNewTypeBtn').style.display = 'none';
-                document.getElementById('adminDashboard').style.display = 'none';
-                document.getElementById('submissionsSectionTitle').textContent = 'Your Submissions';
-            }
-            
+        document.addEventListener('DOMContentLoaded', function() {
             renderAcknowledmentTypes();
             setupEventListeners();
             updateSubmissionsDisplay();
-        }
-
-        // Tab Navigation
-        function switchTab(tab) {
-            // Remove active class from all tabs
-            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-            
-            if (tab === 'acknowledgments') {
-                document.getElementById('acknowledgementsTab').classList.add('active');
-                document.getElementById('acknowledgementsSection').style.display = 'block';
-                document.getElementById('submissionsSection').style.display = 'none';
-            } else if (tab === 'submissions') {
-                document.getElementById('submissionsTab').classList.add('active');
-                document.getElementById('acknowledgementsSection').style.display = 'none';
-                document.getElementById('submissionsSection').style.display = 'block';
-                updateSubmissionsDisplay();
-            }
-        }
-
-        // Dashboard Functions
-        function updateDashboard() {
-            if (currentUserRole !== 'admin') return;
-            
-            const totalAcks = acknowledgmentTypes.length;
-            const totalSubs = submissions.length;
-            const uniqueUsers = [...new Set(submissions.map(s => s.employeeName))].length;
-            const today = new Date().toLocaleDateString();
-            const todaySubs = submissions.filter(s => s.date === today).length;
-            
-            document.getElementById('totalAcknowledgments').textContent = totalSubs;
-            document.getElementById('totalUsers').textContent = uniqueUsers;
-            document.getElementById('totalTypes').textContent = totalAcks;
-            document.getElementById('todaySubmissions').textContent = todaySubs;
-        }
+        });
 
         // Event Listeners
         function setupEventListeners() {
@@ -1128,7 +838,7 @@
             currentSelectedType = typeId;
             currentFormData = {
                 requestNo: `${new Date().getFullYear()}/${Math.floor(Math.random() * 1000000)}`,
-                employeeName: currentUser || '',
+                employeeName: '',
                 acknowledged: false
             };
             openAcknowledmentModal();
@@ -1196,7 +906,7 @@
                         
                         <div class="form-row">
                             <label class="form-label">Employee Name:</label>
-                            <input type="text" id="employeeNameInput" class="form-input" value="${currentUser}" readonly>
+                            <input type="text" id="employeeNameInput" class="form-input" placeholder="Enter employee name" value="${currentFormData.employeeName}">
                         </div>
                         
                         <div class="form-row">
@@ -1246,7 +956,7 @@
                     
                     <div class="form-row">
                         <label class="form-label">Employee Name:</label>
-                        <input type="text" id="employeeNameInput" class="form-input" value="${currentUser}" readonly>
+                        <input type="text" id="employeeNameInput" class="form-input" placeholder="Enter employee name" value="${currentFormData.employeeName}">
                     </div>
                     
                     <div class="form-row">
@@ -1295,7 +1005,7 @@
             }, 100);
         }
 
-        // Submit acknowledgment to SharePoint
+        // Submit acknowledgment
         function submitAcknowledgment() {
             const requestNoInput = document.getElementById('requestNoInput');
             const employeeNameInput = document.getElementById('employeeNameInput');
@@ -1316,55 +1026,19 @@
             }
             
             const selectedType = acknowledgmentTypes.find(t => t.id === currentSelectedType);
-            
-            // Prepare data for SharePoint
-            const data = {
-                __metadata: { type: "SP.Data.AcknowledgmentSubmissionsListItem" },
-                Title: selectedType.title,
-                RequestNo: currentFormData.requestNo,
-                EmployeeName: currentFormData.employeeName,
-                EmployeeEmail: currentUser,
-                AcknowledgmentType: currentSelectedType,
-                Acknowledged: currentFormData.acknowledged,
-                SubmissionDate: new Date().toISOString()
+            const newSubmission = {
+                id: Date.now().toString(),
+                type: selectedType.title,
+                employeeName: currentFormData.employeeName,
+                requestNo: currentFormData.requestNo,
+                date: new Date().toLocaleDateString(),
+                acknowledged: currentFormData.acknowledged
             };
             
-            // Submit to SharePoint
-            $.ajax({
-                url: _spPageContextInfo.webAbsoluteUrl + "/_api/web/lists/getbytitle('AcknowledgmentSubmissions')/items",
-                type: "POST",
-                contentType: "application/json;odata=verbose",
-                data: JSON.stringify(data),
-                headers: {
-                    "Accept": "application/json;odata=verbose",
-                    "X-RequestDigest": _spPageContextInfo.formDigestValue
-                },
-                success: function() {
-                    const newSubmission = {
-                        id: Date.now().toString(),
-                        type: selectedType.title,
-                        employeeName: currentFormData.employeeName,
-                        requestNo: currentFormData.requestNo,
-                        date: new Date().toLocaleDateString(),
-                        acknowledged: currentFormData.acknowledged
-                    };
-                    
-                    submissions.push(newSubmission);
-                    closeAcknowledmentModal();
-                    updateSubmissionsDisplay();
-                    
-                    // Update dashboard if admin
-                    if (currentUserRole === 'admin') {
-                        updateDashboard();
-                    }
-                    
-                    showToast('Your acknowledgment has been successfully recorded.', 'success');
-                },
-                error: function(err) {
-                    console.error("Submission error:", err);
-                    showToast('Error submitting acknowledgment: ' + (err.responseJSON?.error?.message?.value || err.statusText), 'error');
-                }
-            });
+            submissions.push(newSubmission);
+            closeAcknowledmentModal();
+            updateSubmissionsDisplay();
+            showToast('Your acknowledgment has been successfully recorded.', 'success');
         }
 
         // Download PDF function
@@ -1515,23 +1189,14 @@
 
         // Update submissions display
         function updateSubmissionsDisplay(searchTerm = '') {
-            let userSubmissions = submissions;
-            
-            // Filter by user role - regular users see only their submissions
-            if (currentUserRole === 'user') {
-                userSubmissions = submissions.filter(submission => 
-                    submission.employeeName.toLowerCase() === currentUser.toLowerCase()
-                );
-            }
-            
-            if (userSubmissions.length === 0) {
+            if (submissions.length === 0) {
                 submissionsSection.style.display = 'none';
                 return;
             }
             
             submissionsSection.style.display = 'block';
             
-            const filteredSubmissions = userSubmissions.filter(submission => 
+            const filteredSubmissions = submissions.filter(submission => 
                 searchTerm === '' || 
                 submission.employeeName.toLowerCase().includes(searchTerm)
             );
