@@ -273,14 +273,55 @@ function renderAcknowledmentTypes() {
 
 function openAcknowledmentModal(type) {
     selectedType = type;
+    const isRemoteWorking = type.title === 'Remote Area Working Acknowledgement';
+    const requestNo = `${new Date().getFullYear()}/${Math.floor(Math.random() * 1000000)}`;
+    
     document.getElementById('modalTitle').textContent = type.title;
     document.getElementById('modalContent').innerHTML = `
-        <h4>${type.title}</h4>
-        <p>${type.description}</p>
-        <p><strong>Request No:</strong> ${new Date().getFullYear()}/${Math.floor(Math.random() * 1000000)}</p>
-        <p><strong>Employee:</strong> ${currentUser.name}</p>
-        <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+        <div class="acknowledgment-header">
+            <div class="acknowledgment-title-ar">
+                ${isRemoteWorking ? 'إقرار الإلتزام بتعليمات العمل في المناطق النائية' : type.title}
+            </div>
+            <div class="acknowledgment-title-en">
+                ${type.title}
+            </div>
+        </div>
+        
+        <div class="acknowledgment-content">
+            ${isRemoteWorking ? `
+                <p>أقر أنني تقدمت بناءً على رغبتي وإختياري بطلب الإنتقال للعمل في المنطقة النائية لمدة ستين أو في أي وقت يحدد حسب متطلبات مراحلة العمل إستناداً إلى تطبيق الإئتمة الخاصة بالعمل في المناطق النائية:</p>
+                
+                <ol class="acknowledgment-rules">
+                    <li>إستخدام السكن المؤمن من قبل الشركة طيلة فترة النوبة الأسبوعية.</li>
+                    <li>إستخدام المواصلات المؤمنة من قبل الشركة وعدم إستخدام المركبة الشخصية للتنقل للعمل.</li>
+                    <li>الإلتزام وإتباع جميع أنظمة وتعليمات السلامة وفق سياسات وأنظمة الشركة.</li>
+                </ol>
+            ` : `<p>${type.description}</p>`}
+            
+            <div class="info-notice">
+                ℹ️ The content of this item will be sent as an e-mail message to the person or group assigned to the item.
+            </div>
+        </div>
+        
+        <div class="request-section">
+            <h3>Request Information</h3>
+            <div class="form-row">
+                <label class="form-label">Request No:</label>
+                <input type="text" id="requestNoField" value="${requestNo}" readonly class="form-input" style="background: #1f2937; color: white;">
+            </div>
+            
+            <div class="form-row">
+                <label class="form-label">Employee Name:</label>
+                <input type="text" id="employeeNameField" value="${currentUser.name}" readonly class="form-input">
+            </div>
+            
+            <div class="acknowledgment-checkbox">
+                <input type="checkbox" id="acknowledgeCheckbox">
+                <label for="acknowledgeCheckbox">I acknowledge that I have read, understood and agree to the above policies and procedures</label>
+            </div>
+        </div>
     `;
+    
     document.getElementById('acknowledgeCheckbox').checked = false;
     document.getElementById('modal').classList.remove('hidden');
 }

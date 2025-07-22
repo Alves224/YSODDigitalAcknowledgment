@@ -82,22 +82,12 @@
         <!-- Modal -->
         <div id="modal" class="modal hidden">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h3 id="modalTitle">Acknowledgment Form</h3>
-                    <button id="closeModal" class="close-btn">&times;</button>
+                <div id="modalContent">
+                    <!-- Dynamic content will be inserted here -->
                 </div>
-                <div class="modal-body">
-                    <div id="modalContent"></div>
-                    <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="acknowledgeCheckbox">
-                            I acknowledge and agree to the above terms
-                        </label>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button id="submitAcknowledgment" class="btn btn-primary">Submit</button>
-                    <button id="cancelModal" class="btn btn-secondary">Cancel</button>
+                <div class="modal-actions">
+                    <button class="btn-submit" id="submitAcknowledgment">Submit</button>
+                    <button class="btn-cancel" id="cancelModal">Cancel</button>
                 </div>
             </div>
         </div>
