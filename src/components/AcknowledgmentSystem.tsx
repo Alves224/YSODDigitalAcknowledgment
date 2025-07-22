@@ -431,7 +431,7 @@ export const AcknowledgmentSystem = () => {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {acknowledgmentTypes.map(type => {
                 const IconComponent = type.icon;
-                return <Card key={type.id} className="border hover:shadow-md transition-all duration-200 cursor-pointer hover:border-primary/50" onClick={() => handleTypeSelect(type.id)}>
+                return <Card key={type.id} className="border-2 hover:shadow-lg transition-all duration-200 cursor-pointer hover:border-primary bg-card border-border shadow-md" onClick={() => handleTypeSelect(type.id)}>
                   <CardHeader className="text-center relative">
                     {userRole.role === 'Admin' && type.id.startsWith('custom-') && (
                       <Button variant="ghost" size="sm" className="absolute top-2 right-2 h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50" 
@@ -442,11 +442,11 @@ export const AcknowledgmentSystem = () => {
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     )}
-                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center border-2 border-primary/30">
                       <IconComponent className="w-8 h-8 text-primary" />
                     </div>
-                    <CardTitle className="text-lg">{type.title}</CardTitle>
-                    <p className="text-muted-foreground text-sm">
+                    <CardTitle className="text-lg font-bold text-foreground">{type.title}</CardTitle>
+                    <p className="text-muted-foreground text-sm font-medium mt-2">
                       {type.description}
                     </p>
                   </CardHeader>
