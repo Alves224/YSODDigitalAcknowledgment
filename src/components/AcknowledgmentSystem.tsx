@@ -13,6 +13,7 @@ import { UserSwitcher } from '@/components/UserSwitcher';
 import { RoleBasedDashboard } from '@/components/RoleBasedDashboard';
 import { LoginForm } from '@/components/LoginForm';
 import { FileText, Shield, Laptop, Users, AlertTriangle, CheckCircle, Plus, Trash2, Download, Search, Mail, Send } from 'lucide-react';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 import jsPDF from 'jspdf';
 interface AcknowledgmentItem {
   id: string;
@@ -150,7 +151,7 @@ export const AcknowledgmentSystem = () => {
       acknowledged: formData.acknowledged,
       supervisorEmail: employeeInfo?.supervisorEmail || currentUser.supervisorEmail,
       unit: employeeInfo?.unit || currentUser.unit,
-      status: 'Acknowledged'
+      status: 'Completed'
     };
 
     setSubmissions([...submissions, newSubmission]);
@@ -437,8 +438,11 @@ YSOD Digital Acknowledgment System`,
 
   return <div className="min-h-screen bg-background">
       <div className="container mx-auto px-6 py-8">
-        {/* User Switcher */}
-        <UserSwitcher />
+        {/* Header with User Switcher and Theme Toggle */}
+        <div className="flex justify-between items-center mb-8">
+          <UserSwitcher />
+          <ThemeToggle />
+        </div>
 
         {/* Header */}
         <div className="text-center mb-12">
@@ -453,17 +457,23 @@ YSOD Digital Acknowledgment System`,
         </div>
 
         {/* Main Content Tabs */}
-        <Tabs defaultValue="dashboard" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-            <TabsTrigger value="submit">Submit Acknowledgment</TabsTrigger>
+        <Tabs defaultValue={currentUser.role === 'Employee' ? 'submit' : 'dashboard'} className="space-y-6">
+          <TabsList className={`grid w-full ${currentUser.role === 'Employee' ? 'grid-cols-2' : 'grid-cols-3'}`}>
+            {currentUser.role !== 'Employee' && (
+              <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+            )}
+            <TabsTrigger value="submit">
+              {currentUser.role === 'Employee' ? 'Acknowledgments' : 'Submit Acknowledgment'}
+            </TabsTrigger>
             <TabsTrigger value="emails">Email Notifications</TabsTrigger>
           </TabsList>
 
           {/* Dashboard Tab */}
-          <TabsContent value="dashboard">
-            <RoleBasedDashboard />
-          </TabsContent>
+          {currentUser.role !== 'Employee' && (
+            <TabsContent value="dashboard">
+              <RoleBasedDashboard />
+            </TabsContent>
+          )}
 
           {/* Submit Acknowledgment Tab */}
           <TabsContent value="submit" className="space-y-6">
@@ -475,6 +485,14 @@ YSOD Digital Acknowledgment System`,
                   <Plus className="w-4 h-4 mr-2" />
                   Add New Acknowledgment Type
                 </Button>
+              </div>
+            )}
+
+            {/* Employee Role - Show Available Types Only */}
+            {currentUser.role === 'Employee' && (
+              <div className="mb-6">
+                <h2 className="text-2xl font-semibold mb-4">Available Acknowledgment Types</h2>
+                <p className="text-muted-foreground mb-6">Select an acknowledgment type to view and submit.</p>
               </div>
             )}
 

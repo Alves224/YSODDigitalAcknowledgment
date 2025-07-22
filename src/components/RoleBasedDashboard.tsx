@@ -21,7 +21,6 @@ import {
 
 interface DashboardStats {
   totalSubmissions: number;
-  pendingSubmissions: number;
   completedSubmissions: number;
   myTeamSubmissions?: number;
   unitsManaged?: number;
@@ -33,7 +32,6 @@ export const RoleBasedDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [stats, setStats] = useState<DashboardStats>({
     totalSubmissions: 0,
-    pendingSubmissions: 0,
     completedSubmissions: 0
   });
 
@@ -49,7 +47,7 @@ export const RoleBasedDashboard = () => {
         date: '2024-01-15',
         status: 'Completed',
         submittedBy: 'ahmed.khaled@domain.com',
-        unit: 'Unit A'
+        unit: 'YSOD Unit #1'
       },
       {
         requestNo: '2024/000002',
@@ -58,9 +56,9 @@ export const RoleBasedDashboard = () => {
         supervisor: 'supervisorB@domain.com',
         type: 'Safety Acknowledgment',
         date: '2024-01-16',
-        status: 'Pending',
+        status: 'Completed',
         submittedBy: 'reem.abdullah@domain.com',
-        unit: 'Unit B'
+        unit: 'YSOD Unit #2'
       },
       {
         requestNo: '2024/000003',
@@ -71,7 +69,7 @@ export const RoleBasedDashboard = () => {
         date: '2024-01-17',
         status: 'Completed',
         submittedBy: 'mohammed.hassan@domain.com',
-        unit: 'Unit A'
+        unit: 'YSOD Unit #3'
       },
       {
         requestNo: '2024/000004',
@@ -80,9 +78,9 @@ export const RoleBasedDashboard = () => {
         supervisor: 'supervisorB@domain.com',
         type: 'Training Acknowledgment',
         date: '2024-01-18',
-        status: 'Acknowledged',
+        status: 'Completed',
         submittedBy: 'sara.ahmed@domain.com',
-        unit: 'Unit B'
+        unit: 'YSOD Unit #4'
       },
       {
         requestNo: '2024/000005',
@@ -91,9 +89,9 @@ export const RoleBasedDashboard = () => {
         supervisor: 'supervisorC@domain.com',
         type: 'Security Acknowledgment',
         date: '2024-01-19',
-        status: 'Pending',
+        status: 'Completed',
         submittedBy: 'omar.khalil@domain.com',
-        unit: 'Unit C'
+        unit: 'YST Unit & Day Concept'
       }
     ];
 
@@ -122,7 +120,6 @@ export const RoleBasedDashboard = () => {
 
       return {
         totalSubmissions: filteredSubmissions.length,
-        pendingSubmissions: filteredSubmissions.filter(s => s.status === 'Pending').length,
         completedSubmissions: filteredSubmissions.filter(s => s.status === 'Completed').length,
         myTeamSubmissions: currentUser?.role === 'Supervisor' ? filteredSubmissions.length : undefined,
         unitsManaged: currentUser?.role === 'Supervisor' ? 
@@ -169,10 +166,9 @@ export const RoleBasedDashboard = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Completed': return 'bg-green-100 text-green-800 border-green-200';
-      case 'Acknowledged': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'Pending': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'Completed': return 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900 dark:text-green-300 dark:border-green-800';
+      case 'Acknowledged': return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900 dark:text-blue-300 dark:border-blue-800';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700';
     }
   };
 
@@ -182,7 +178,7 @@ export const RoleBasedDashboard = () => {
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Submissions</CardTitle>
@@ -197,18 +193,6 @@ export const RoleBasedDashboard = () => {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.pendingSubmissions}</div>
-            <p className="text-xs text-muted-foreground">
-              Awaiting acknowledgment
-            </p>
-          </CardContent>
-        </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -348,16 +332,24 @@ export const RoleBasedDashboard = () => {
                 <CardContent>
                   <div className="space-y-2">
                     <div className="flex justify-between">
-                      <span className="text-sm">Unit A</span>
-                      <span className="text-sm font-medium">85% completion</span>
+                      <span className="text-sm">YSOD Unit #1</span>
+                      <span className="text-sm font-medium">95% completion</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm">Unit B</span>
+                      <span className="text-sm">YSOD Unit #2</span>
+                      <span className="text-sm font-medium">88% completion</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm">YSOD Unit #3</span>
                       <span className="text-sm font-medium">92% completion</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm">Unit C</span>
+                      <span className="text-sm">YSOD Unit #4</span>
                       <span className="text-sm font-medium">78% completion</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm">YST Unit & Day Concept</span>
+                      <span className="text-sm font-medium">85% completion</span>
                     </div>
                   </div>
                 </CardContent>

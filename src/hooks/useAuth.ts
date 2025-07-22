@@ -8,11 +8,13 @@ const mockAdminList = [
 ];
 
 const mockSupervisorList = [
-  { employeeName: 'Ahmed Khaled', supervisorEmail: 'supervisorA@domain.com', unit: 'Unit A' },
-  { employeeName: 'Reem Abdullah', supervisorEmail: 'supervisorB@domain.com', unit: 'Unit B' },
-  { employeeName: 'Mohammed Hassan', supervisorEmail: 'supervisorA@domain.com', unit: 'Unit A' },
-  { employeeName: 'Sara Ahmed', supervisorEmail: 'supervisorB@domain.com', unit: 'Unit B' },
-  { employeeName: 'Omar Khalil', supervisorEmail: 'supervisorC@domain.com', unit: 'Unit C' }
+  { employeeName: 'Ahmed Khaled', supervisorEmail: 'supervisorA@domain.com', unit: 'YSOD Unit #1' },
+  { employeeName: 'Reem Abdullah', supervisorEmail: 'supervisorB@domain.com', unit: 'YSOD Unit #2' },
+  { employeeName: 'Mohammed Hassan', supervisorEmail: 'supervisorA@domain.com', unit: 'YSOD Unit #3' },
+  { employeeName: 'Sara Ahmed', supervisorEmail: 'supervisorB@domain.com', unit: 'YSOD Unit #4' },
+  { employeeName: 'Omar Khalil', supervisorEmail: 'supervisorC@domain.com', unit: 'YST Unit & Day Concept' },
+  { employeeName: 'Nour Ali', supervisorEmail: 'supervisorD@domain.com', unit: 'YSOD Unit #1' },
+  { employeeName: 'Khalid Omar', supervisorEmail: 'supervisorE@domain.com', unit: 'YSOD Unit #2' }
 ];
 
 const mockUsers = [
@@ -20,11 +22,15 @@ const mockUsers = [
   'supervisorA@domain.com', 
   'supervisorB@domain.com',
   'supervisorC@domain.com',
+  'supervisorD@domain.com',
+  'supervisorE@domain.com',
   'ahmed.khaled@domain.com',
   'reem.abdullah@domain.com',
   'mohammed.hassan@domain.com',
   'sara.ahmed@domain.com',
-  'omar.khalil@domain.com'
+  'omar.khalil@domain.com',
+  'nour.ali@domain.com',
+  'khalid.omar@domain.com'
 ];
 
 export const useAuth = () => {
