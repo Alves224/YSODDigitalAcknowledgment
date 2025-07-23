@@ -431,8 +431,8 @@ export const AcknowledgmentSystem = () => {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {acknowledgmentTypes.map(type => {
                 const IconComponent = type.icon;
-                return <Card key={type.id} className="border-2 hover:shadow-xl transition-all duration-300 cursor-pointer hover:border-primary bg-card hover:bg-accent/20 shadow-lg hover:scale-105" onClick={() => handleTypeSelect(type.id)}>
-                  <CardHeader className="text-center relative p-6">
+                return <Card key={type.id} className="border hover:shadow-md transition-all duration-200 cursor-pointer hover:border-primary/50" onClick={() => handleTypeSelect(type.id)}>
+                  <CardHeader className="text-center relative">
                     {userRole.role === 'Admin' && type.id.startsWith('custom-') && (
                       <Button variant="ghost" size="sm" className="absolute top-2 right-2 h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50" 
                         onClick={e => {
@@ -442,11 +442,11 @@ export const AcknowledgmentSystem = () => {
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     )}
-                    <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-primary/20 flex items-center justify-center border-4 border-primary/40 shadow-md">
-                      <IconComponent className="w-10 h-10 text-primary" />
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                      <IconComponent className="w-8 h-8 text-primary" />
                     </div>
-                    <CardTitle className="text-xl font-bold text-card-foreground mb-3">{type.title}</CardTitle>
-                    <p className="text-muted-foreground text-sm font-medium leading-relaxed">
+                    <CardTitle className="text-lg">{type.title}</CardTitle>
+                    <p className="text-muted-foreground text-sm">
                       {type.description}
                     </p>
                   </CardHeader>
