@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -7,8 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileText, Shield, Laptop, Users, AlertTriangle, CheckCircle, Plus, Trash2, Download, Search, BarChart3, UserCheck, Clock, Moon, Sun } from 'lucide-react';
+import { FileText, Shield, Laptop, Users, AlertTriangle, CheckCircle, Plus, Trash2, Download, Search } from 'lucide-react';
 import jsPDF from 'jspdf';
 interface AcknowledgmentItem {
   id: string;
@@ -17,14 +16,6 @@ interface AcknowledgmentItem {
   requestNo: string;
   date: string;
   acknowledged: boolean;
-  supervisorEmail?: string;
-  unit?: string;
-}
-
-interface UserRole {
-  role: 'Admin' | 'Supervisor' | 'Employee';
-  unit?: string;
-  supervisorEmail?: string;
 }
 interface AcknowledgmentType {
   id: string;
@@ -92,66 +83,9 @@ export const AcknowledgmentSystem = () => {
   });
   const [submissions, setSubmissions] = useState<AcknowledgmentItem[]>([]);
   const [searchName, setSearchName] = useState<string>('');
-  const [currentUser, setCurrentUser] = useState<string>('');
-  const [userRole, setUserRole] = useState<UserRole>({ role: 'Employee' });
-  const [activeTab, setActiveTab] = useState('acknowledgments');
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const { toast } = useToast();
-
-  // Simulate SharePoint user detection and role checking
-  useEffect(() => {
-    // In a real SharePoint environment, this would use _spPageContextInfo.userDisplayName
-    const simulatedUser = 'ahmed.khaled@company.com';
-    setCurrentUser(simulatedUser);
-    checkUserRole(simulatedUser);
-    
-    // Auto-fill employee name for current user
-    setFormData(prev => ({
-      ...prev,
-      employeeName: simulatedUser
-    }));
-
-    // Load dark mode preference
-    const savedDarkMode = localStorage.getItem('darkMode') === 'true';
-    setIsDarkMode(savedDarkMode);
-    if (savedDarkMode) {
-      document.documentElement.classList.add('dark');
-    }
-  }, []);
-
-  const checkUserRole = async (userEmail: string) => {
-    // Simulate checking AdminList and SupervisorList from SharePoint
-    const adminUsers = ['admin@company.com', 'amer.alsomali@company.com'];
-    const supervisorData = [
-      { employee: 'ahmed.khaled@company.com', supervisor: 'supervisor.a@company.com', unit: 'Unit A' },
-      { employee: 'reem.abdullah@company.com', supervisor: 'supervisor.b@company.com', unit: 'Unit B' }
-    ];
-
-    if (adminUsers.includes(userEmail)) {
-      setUserRole({ role: 'Admin' });
-    } else if (userEmail.includes('supervisor')) {
-      setUserRole({ role: 'Supervisor', unit: 'Unit A' });
-    } else {
-      const empData = supervisorData.find(item => item.employee === userEmail);
-      setUserRole({ 
-        role: 'Employee', 
-        unit: empData?.unit,
-        supervisorEmail: empData?.supervisor 
-      });
-    }
-  };
-
-  const toggleDarkMode = () => {
-    const newDarkMode = !isDarkMode;
-    setIsDarkMode(newDarkMode);
-    localStorage.setItem('darkMode', newDarkMode.toString());
-    
-    if (newDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  };
+  const {
+    toast
+  } = useToast();
   const handleTypeSelect = (typeId: string) => {
     setSelectedType(typeId);
     setFormData({
@@ -170,39 +104,20 @@ export const AcknowledgmentSystem = () => {
       });
       return;
     }
-
     const newSubmission: AcknowledgmentItem = {
       id: Date.now().toString(),
       type: acknowledgmentTypes.find(t => t.id === selectedType)?.title || '',
       employeeName: formData.employeeName,
       requestNo: formData.requestNo,
       date: new Date().toLocaleDateString(),
-      acknowledged: formData.acknowledged,
-      supervisorEmail: userRole.supervisorEmail,
-      unit: userRole.unit
+      acknowledged: formData.acknowledged
     };
-
     setSubmissions([...submissions, newSubmission]);
     setIsModalOpen(false);
-    
-    // Simulate email notifications
-    sendEmailNotifications(newSubmission);
-    
     toast({
       title: "Acknowledgment Submitted",
-      description: "Your acknowledgment has been successfully recorded and notifications sent."
+      description: "Your acknowledgment has been successfully recorded."
     });
-  };
-
-  const sendEmailNotifications = (submission: AcknowledgmentItem) => {
-    // Simulate sending emails to different recipients based on role
-    console.log('Email sent to employee:', submission.employeeName);
-    if (submission.supervisorEmail) {
-      console.log('Email sent to supervisor:', submission.supervisorEmail);
-    }
-    if (userRole.role === 'Admin') {
-      console.log('Email sent to all admins');
-    }
   };
   const handleAddNewType = () => {
     if (!newTypeData.title || !newTypeData.description) {
@@ -337,280 +252,125 @@ export const AcknowledgmentSystem = () => {
     });
   };
 
-  // Filter submissions based on user role and search
-  const getFilteredSubmissions = () => {
-    let filtered = submissions;
-    
-    // Apply role-based filtering
-    if (userRole.role === 'Employee') {
-      filtered = submissions.filter(sub => sub.employeeName === currentUser);
-    } else if (userRole.role === 'Supervisor') {
-      filtered = submissions.filter(sub => sub.unit === userRole.unit);
-    }
-    // Admin sees all submissions
-    
-    // Apply search filter
-    if (searchName.trim()) {
-      filtered = filtered.filter(submission =>
-        submission.employeeName.toLowerCase().includes(searchName.toLowerCase())
-      );
-    }
-    
-    return filtered;
-  };
-
-  const filteredSubmissions = getFilteredSubmissions();
-
-  // Dashboard statistics
-  const getDashboardStats = () => {
-    const totalAcknowledgments = filteredSubmissions.length;
-    const uniqueEmployees = new Set(filteredSubmissions.map(s => s.employeeName)).size;
-    const totalTypes = acknowledgmentTypes.length;
-    const todaySubmissions = filteredSubmissions.filter(s => 
-      s.date === new Date().toLocaleDateString()
-    ).length;
-
-    return { totalAcknowledgments, uniqueEmployees, totalTypes, todaySubmissions };
-  };
-
-  const stats = getDashboardStats();
+  // Filter submissions based on search name
+  const filteredSubmissions = submissions.filter(submission => 
+    searchName.trim() === '' || 
+    submission.employeeName.toLowerCase().includes(searchName.toLowerCase())
+  );
 
   const selectedAck = acknowledgmentTypes.find(t => t.id === selectedType);
-  
-  return <div className="min-h-screen bg-background transition-colors duration-300">
+  return <div className="min-h-screen bg-background">
       <div className="container mx-auto px-6 py-8">
-        {/* Header with Dark Mode Toggle */}
-        <div className="flex justify-between items-center mb-8">
-          <div className="text-center flex-1">
-            <h1 className="text-4xl font-bold text-foreground mb-4">
-              YSOD Digital Acknowledgment Form Hub
-            </h1>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              {userRole.role} Dashboard - {currentUser}
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={toggleDarkMode}
-            className="ml-4 bg-background border-border hover:bg-accent"
-          >
-            {isDarkMode ? (
-              <Sun className="h-[1.2rem] w-[1.2rem] text-foreground" />
-            ) : (
-              <Moon className="h-[1.2rem] w-[1.2rem] text-foreground" />
-            )}
-            <span className="sr-only">Toggle dark mode</span>
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-foreground mb-4">
+            YSOD Digital Acknowledgment Form Hub
+          </h1>
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+            Select the type of acknowledgment you need to complete
+          </p>
+        </div>
+
+        {/* Add New Type Button */}
+        <div className="flex justify-end mb-6">
+          <Button onClick={() => setIsAddTypeModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Plus className="w-4 h-4 mr-2" />
+            Add New Acknowledgment Type
           </Button>
         </div>
 
-        {/* Role-based Navigation */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="acknowledgments">Acknowledgments</TabsTrigger>
-            <TabsTrigger value="submissions">
-              {userRole.role === 'Employee' ? 'My Submissions' : 'Submissions'}
-            </TabsTrigger>
-            {(userRole.role === 'Admin' || userRole.role === 'Supervisor') && (
-              <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-            )}
-          </TabsList>
-
-          <TabsContent value="acknowledgments" className="space-y-6">
-            {/* Add New Type Button - Admin Only */}
-            {userRole.role === 'Admin' && (
-              <div className="flex justify-end">
-                <Button onClick={() => setIsAddTypeModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add New Acknowledgment Type
-                </Button>
-              </div>
-            )}
-
-            {/* Acknowledgment Types Grid */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {acknowledgmentTypes.map(type => {
-                const IconComponent = type.icon;
-                return <Card key={type.id} className="border hover:shadow-md transition-all duration-200 cursor-pointer hover:border-primary/50" onClick={() => handleTypeSelect(type.id)}>
-                  <CardHeader className="text-center relative">
-                    {userRole.role === 'Admin' && type.id.startsWith('custom-') && (
-                      <Button variant="ghost" size="sm" className="absolute top-2 right-2 h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50" 
-                        onClick={e => {
-                          e.stopPropagation();
-                          handleDeleteType(type.id);
-                        }}>
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    )}
-                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                      <IconComponent className="w-8 h-8 text-primary" />
-                    </div>
-                    <CardTitle className="text-lg">{type.title}</CardTitle>
-                    <p className="text-muted-foreground text-sm">
-                      {type.description}
-                    </p>
-                  </CardHeader>
-                </Card>;
-              })}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="submissions" className="space-y-6">
-
-            {/* Submissions Content */}
-            {submissions.length > 0 ? (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5" />
-                    {userRole.role === 'Employee' ? 'Your Submissions' : 
-                     userRole.role === 'Supervisor' ? 'Team Submissions' : 'All Submissions'}
-                  </CardTitle>
+        {/* Acknowledgment Types Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          {acknowledgmentTypes.map(type => {
+          const IconComponent = type.icon;
+          return <Card key={type.id} className="border hover:shadow-md transition-all duration-200 cursor-pointer hover:border-primary/50" onClick={() => handleTypeSelect(type.id)}>
+                <CardHeader className="text-center relative">
+                  {type.id.startsWith('custom-') && <Button variant="ghost" size="sm" className="absolute top-2 right-2 h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50" onClick={e => {
+                e.stopPropagation();
+                handleDeleteType(type.id);
+              }}>
+                      <Trash2 className="w-4 h-4" />
+                    </Button>}
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                    <IconComponent className="w-8 h-8 text-primary" />
+                  </div>
+                  <CardTitle className="text-lg">{type.title}</CardTitle>
+                  <p className="text-muted-foreground text-sm">
+                    {type.description}
+                  </p>
                 </CardHeader>
-                <CardContent>
-                  {/* Search Field */}
-                  <div className="mb-6">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                      <Input
-                        placeholder={`Search by employee name...`}
-                        value={searchName}
-                        onChange={(e) => setSearchName(e.target.value)}
-                        className="pl-10"
-                      />
-                    </div>
-                  </div>
+              </Card>;
+        })}
+        </div>
 
-                  {/* Submissions List */}
-                  <div className="space-y-4">
-                    {filteredSubmissions.length > 0 ? (
-                      filteredSubmissions.map(submission => (
-                        <div key={submission.id} className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => handleOpenSubmission(submission)}>
-                          <div>
-                            <h3 className="font-medium">{submission.type}</h3>
-                            <p className="text-muted-foreground text-sm">Request No: {submission.requestNo}</p>
-                            <p className="text-muted-foreground text-sm">Employee: {submission.employeeName}</p>
-                            {(userRole.role === 'Admin' || userRole.role === 'Supervisor') && submission.unit && (
-                              <p className="text-muted-foreground text-sm">Unit: {submission.unit}</p>
-                            )}
-                          </div>
-                          <div className="text-right">
-                            <p className="text-muted-foreground text-sm">{submission.date}</p>
-                            <span className="inline-flex items-center gap-1 text-success text-sm">
-                              <CheckCircle className="w-4 h-4" />
-                              Acknowledged
-                            </span>
-                          </div>
-                        </div>
-                      ))
-                    ) : searchName ? (
-                      <div className="text-center py-8 text-muted-foreground">
-                        <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                        <p>No submissions found for "{searchName}"</p>
-                        <p className="text-sm">Try searching with a different employee name</p>
-                      </div>
-                    ) : (
-                      <div className="text-center py-8 text-muted-foreground">
-                        <p>No submissions found</p>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card>
-                <CardContent className="text-center py-8">
-                  <p className="text-muted-foreground">No submissions yet</p>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-
-          {/* Dashboard Tab - Admin/Supervisor Only */}
-          {(userRole.role === 'Admin' || userRole.role === 'Supervisor') && (
-            <TabsContent value="dashboard" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Acknowledgments</CardTitle>
-                    <FileText className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{stats.totalAcknowledgments}</div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      {userRole.role === 'Supervisor' ? 'Team Members' : 'Total Users'}
-                    </CardTitle>
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{stats.uniqueEmployees}</div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Acknowledgment Types</CardTitle>
-                    <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{stats.totalTypes}</div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Today's Submissions</CardTitle>
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{stats.todaySubmissions}</div>
-                  </CardContent>
-                </Card>
+        {/* Recent Submissions */}
+        {submissions.length > 0 && <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CheckCircle className="w-5 h-5" />
+                Your Submissions
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {/* Search Field */}
+              <div className="mb-6">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                  <Input
+                    placeholder="Search by employee name to view your submissions..."
+                    value={searchName}
+                    onChange={(e) => setSearchName(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
               </div>
 
-              {/* Recent Activity */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Recent Activity</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {filteredSubmissions.slice(0, 5).map(submission => (
-                      <div key={submission.id} className="flex items-center justify-between p-3 border rounded">
-                        <div>
-                          <p className="font-medium">{submission.employeeName}</p>
-                          <p className="text-sm text-muted-foreground">{submission.type}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm">{submission.date}</p>
-                          <span className="text-xs text-success">Completed</span>
-                        </div>
+              {/* Submissions List */}
+              <div className="space-y-4">
+                {filteredSubmissions.length > 0 ? (
+                  filteredSubmissions.map(submission => (
+                    <div key={submission.id} className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => handleOpenSubmission(submission)}>
+                      <div>
+                        <h3 className="font-medium">{submission.type}</h3>
+                        <p className="text-muted-foreground text-sm">Request No: {submission.requestNo}</p>
+                        <p className="text-muted-foreground text-sm">Employee: {submission.employeeName}</p>
                       </div>
-                    ))}
+                      <div className="text-right">
+                        <p className="text-muted-foreground text-sm">{submission.date}</p>
+                        <span className="inline-flex items-center gap-1 text-success text-sm">
+                          <CheckCircle className="w-4 h-4" />
+                          Acknowledged
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                ) : searchName ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>No submissions found for "{searchName}"</p>
+                    <p className="text-sm">Try searching with a different employee name</p>
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          )}
-        </Tabs>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p>Enter an employee name to search for submissions</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>}
       </div>
 
       {/* Acknowledgment Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-background border-border">
-          <div className="bg-background p-8 space-y-6">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white p-8 space-y-6">
             {selectedAck?.id === 'remote-work' && selectedAck.content ? <>
                 {/* Header with Arabic title */}
-                <div className="text-center border-b border-border pb-6">
+                <div className="text-center border-b pb-6">
                   <h1 className="text-2xl font-bold text-red-600 mb-2" dir="rtl">
                     {selectedAck.content.arabic}
                   </h1>
-                  <h2 className="text-lg text-foreground">
+                  <h2 className="text-lg text-gray-700">
                     {selectedAck.content.subtitle}
                   </h2>
                 </div>
@@ -618,13 +378,13 @@ export const AcknowledgmentSystem = () => {
                 {/* Content */}
                 <div className="space-y-6">
                   <div className="text-right" dir="rtl">
-                    <p className="text-foreground leading-relaxed text-base">
+                    <p className="text-gray-800 leading-relaxed text-base">
                       {selectedAck.content.description}
                     </p>
                   </div>
 
                    {selectedAck.content.rules && <div className="text-right" dir="rtl">
-                       <ol className="list-decimal list-inside space-y-2 text-foreground">
+                       <ol className="list-decimal list-inside space-y-2 text-gray-800">
                          {selectedAck.content.rules.map((rule, index) => <li key={index} className="leading-relaxed">
                              {rule}
                            </li>)}
@@ -643,27 +403,27 @@ export const AcknowledgmentSystem = () => {
                 </div>
 
                 {/* Form */}
-                <div className="bg-muted/50 p-6 space-y-4">
-                  <h3 className="font-semibold text-foreground bg-muted px-3 py-2 rounded">Request Information</h3>
+                <div className="bg-gray-50 p-6 space-y-4">
+                  <h3 className="font-semibold text-gray-700 bg-gray-200 px-3 py-2">Request Information</h3>
                   
                   <div className="grid grid-cols-1 gap-4">
                     <div className="grid grid-cols-3 items-center gap-4">
-                      <Label className="text-sm font-medium text-foreground">Request No:</Label>
+                      <Label className="text-sm font-medium text-gray-700">Request No:</Label>
                       <div className="col-span-2">
                         <Input value={formData.requestNo} onChange={e => setFormData({
                       ...formData,
                       requestNo: e.target.value
-                    })} className="border-border bg-background" />
+                    })} className="border-gray-300" />
                       </div>
                     </div>
                     
                     <div className="grid grid-cols-3 items-center gap-4">
-                      <Label className="text-sm font-medium text-foreground">Employee Name:</Label>
+                      <Label className="text-sm font-medium text-gray-700">Employee Name:</Label>
                       <div className="col-span-2">
                         <Input value={formData.employeeName} onChange={e => setFormData({
                       ...formData,
                       employeeName: e.target.value
-                    })} className="border-border bg-background" placeholder="Enter employee name" />
+                    })} className="border-gray-300" placeholder="Enter employee name" />
                       </div>
                     </div>
 
