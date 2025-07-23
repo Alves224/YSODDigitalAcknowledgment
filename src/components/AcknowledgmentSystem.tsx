@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { FileText, Shield, Laptop, Users, AlertTriangle, CheckCircle, Plus, Trash2, Download, Search } from 'lucide-react';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 import jsPDF from 'jspdf';
 interface AcknowledgmentItem {
   id: string;
@@ -259,21 +260,33 @@ export const AcknowledgmentSystem = () => {
   );
 
   const selectedAck = acknowledgmentTypes.find(t => t.id === selectedType);
-  return <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-6 py-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-foreground mb-4">
-            YSOD Digital Acknowledgment Form Hub
-          </h1>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Select the type of acknowledgment you need to complete
-          </p>
+  return <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 relative overflow-hidden">
+      {/* Background Design Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-primary rounded-full opacity-10 blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-r from-accent to-primary rounded-full opacity-10 blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-card rounded-full opacity-5 blur-3xl"></div>
+      </div>
+      
+      <div className="container mx-auto px-6 py-8 relative z-10">
+        {/* Header with Theme Toggle */}
+        <div className="flex justify-between items-start mb-12">
+          <div className="text-center flex-1">
+            <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-4">
+              YSOD Digital Acknowledgment Form Hub
+            </h1>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Select the type of acknowledgment you need to complete
+            </p>
+          </div>
+          <div className="ml-8">
+            <ThemeToggle />
+          </div>
         </div>
 
         {/* Add New Type Button */}
         <div className="flex justify-end mb-6">
-          <Button onClick={() => setIsAddTypeModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
+          <Button onClick={() => setIsAddTypeModalOpen(true)} className="bg-gradient-primary hover:opacity-90 text-white shadow-glow border-0">
             <Plus className="w-4 h-4 mr-2" />
             Add New Acknowledgment Type
           </Button>
@@ -283,7 +296,7 @@ export const AcknowledgmentSystem = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           {acknowledgmentTypes.map(type => {
           const IconComponent = type.icon;
-          return <Card key={type.id} className="border hover:shadow-md transition-all duration-200 cursor-pointer hover:border-primary/50" onClick={() => handleTypeSelect(type.id)}>
+          return <Card key={type.id} className="border hover:shadow-elegant transition-all duration-300 cursor-pointer hover:border-primary/50 bg-card/50 backdrop-blur-sm hover:bg-card/80 group" onClick={() => handleTypeSelect(type.id)}>
                 <CardHeader className="text-center relative">
                   {type.id.startsWith('custom-') && <Button variant="ghost" size="sm" className="absolute top-2 right-2 h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50" onClick={e => {
                 e.stopPropagation();
@@ -291,8 +304,8 @@ export const AcknowledgmentSystem = () => {
               }}>
                       <Trash2 className="w-4 h-4" />
                     </Button>}
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                    <IconComponent className="w-8 h-8 text-primary" />
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-primary flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-glow">
+                    <IconComponent className="w-8 h-8 text-white" />
                   </div>
                   <CardTitle className="text-lg">{type.title}</CardTitle>
                   <p className="text-muted-foreground text-sm">
@@ -304,10 +317,10 @@ export const AcknowledgmentSystem = () => {
         </div>
 
         {/* Recent Submissions */}
-        {submissions.length > 0 && <Card>
+        {submissions.length > 0 && <Card className="bg-card/50 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5" />
+                <CheckCircle className="w-5 h-5 text-success" />
                 Your Submissions
               </CardTitle>
             </CardHeader>
