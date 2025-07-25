@@ -452,12 +452,12 @@ export const AcknowledgmentSystem = () => {
 
                    {selectedAck.content.rules && <div className="text-right space-y-3" dir="rtl">
                         {selectedAck.content.rules.map((rule, index) => (
-                          <div key={index} className="flex items-start gap-3 justify-end">
+                          <div key={index} className="flex items-start gap-3">
+                            <span className="text-gray-800 font-medium min-w-[20px] text-left">
+                              {index + 1}.
+                            </span>
                             <span className="text-gray-800 leading-relaxed flex-1 text-right">
                               {rule}
-                            </span>
-                            <span className="text-gray-800 font-medium min-w-[20px] text-right">
-                              .{index + 1}
                             </span>
                           </div>
                         ))}
@@ -518,7 +518,7 @@ export const AcknowledgmentSystem = () => {
                           className="mt-1 border-blue-500 data-[state=checked]:bg-blue-500" 
                         />
                         <label className="text-sm text-gray-700 leading-relaxed flex-1">
-                          I acknowledge that I have read, understood and agree to the above policies and procedures
+                          أقر بأنني قد قرأت وفهمت ووافقت على السياسات والإجراءات المذكورة أعلاه
                         </label>
                       </div>
                     </div>
@@ -554,12 +554,12 @@ export const AcknowledgmentSystem = () => {
                   {/* Numbered Rules */}
                   {selectedAck?.content?.rules && selectedAck.content.rules.length > 0 && <div className="text-right space-y-3" dir="rtl">
                       {selectedAck.content.rules.map((rule, index) => (
-                        <div key={index} className="flex items-start gap-3 justify-end">
+                        <div key={index} className="flex items-start gap-3">
+                          <span className="text-gray-800 font-medium min-w-[20px] text-left">
+                            {index + 1}.
+                          </span>
                           <span className="text-gray-800 leading-relaxed flex-1 text-right">
                             {rule}
-                          </span>
-                          <span className="text-gray-800 font-medium min-w-[20px] text-right">
-                            .{index + 1}
                           </span>
                         </div>
                       ))}
@@ -617,7 +617,7 @@ export const AcknowledgmentSystem = () => {
                             className="mt-1 border-blue-500 data-[state=checked]:bg-blue-500" 
                           />
                           <label className="text-sm text-gray-700 leading-relaxed flex-1">
-                            I acknowledge that I have read, understood and agree to the above policies and procedures
+                            أقر بأنني قد قرأت وفهمت ووافقت على السياسات والإجراءات المذكورة أعلاه
                           </label>
                         </div>
                       </div>
