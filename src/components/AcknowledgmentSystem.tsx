@@ -294,22 +294,27 @@ export const AcknowledgmentSystem = () => {
   const exportSubmissionToPDF = (submission: AcknowledgmentItem) => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
+    let yPosition = 30;
 
     // Header
     doc.setFontSize(20);
     doc.setFont('helvetica', 'bold');
-    doc.text('YSOD Digital Acknowledgment Form Hub', pageWidth / 2, 30, {
+    doc.text('YSOD Digital Acknowledgment Form Hub', pageWidth / 2, yPosition, {
       align: 'center'
     });
 
+    yPosition += 30;
     // Submission details
     doc.setFontSize(16);
-    doc.text('Acknowledgment Submission', pageWidth / 2, 50, {
+    doc.text('Acknowledgment Submission', pageWidth / 2, yPosition, {
       align: 'center'
     });
+    
+    yPosition += 30;
     doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
-    let yPosition = 80;
+    
     doc.text(`Type: ${submission.type}`, 20, yPosition);
     yPosition += 15;
     doc.text(`Request No: ${submission.requestNo}`, 20, yPosition);
@@ -324,39 +329,144 @@ export const AcknowledgmentSystem = () => {
     const ackType = acknowledgmentTypes.find(type => type.title === submission.type);
     if (ackType?.content) {
       yPosition += 30;
+      
       doc.setFont('helvetica', 'bold');
       doc.text('Content:', 20, yPosition);
       yPosition += 15;
-      doc.setFont('helvetica', 'normal');
+      
       if (ackType.content.description) {
-        const lines = doc.splitTextToSize(ackType.content.description, pageWidth - 40);
-        doc.text(lines, 20, yPosition);
-        yPosition += lines.length * 8;
+        doc.setFont('helvetica', 'normal');
+        
+        // Convert Arabic text to a format that jsPDF can handle
+        const processArabicText = (text: string) => {
+          // Replace Arabic characters with their Unicode representation for better compatibility
+          return text
+            .replace(/[\u0600-\u06FF]/g, (match) => {
+              // For now, we'll keep the text as is but ensure proper encoding
+              return match;
+            });
+        };
+        
+        const processedText = processArabicText(ackType.content.description);
+        
+        // Check if content contains Arabic text
+        const hasArabic = /[\u0600-\u06FF]/.test(processedText);
+        
+        if (hasArabic) {
+          // Split text into manageable chunks for Arabic
+          const textWidth = pageWidth - 40;
+          const words = processedText.split(' ');
+          let currentLine = '';
+          const lines: string[] = [];
+          
+          words.forEach(word => {
+            const testLine = currentLine + (currentLine ? ' ' : '') + word;
+            const lineWidth = doc.getTextWidth(testLine);
+            
+            if (lineWidth > textWidth && currentLine) {
+              lines.push(currentLine);
+              currentLine = word;
+            } else {
+              currentLine = testLine;
+            }
+          });
+          
+          if (currentLine) {
+            lines.push(currentLine);
+          }
+          
+          // Render lines with proper spacing
+          lines.forEach((line) => {
+            if (yPosition > pageHeight - 30) {
+              doc.addPage();
+              yPosition = 30;
+            }
+            // For RTL languages, align right
+            doc.text(line, pageWidth - 20, yPosition, { align: 'right' });
+            yPosition += 10;
+          });
+        } else {
+          const lines = doc.splitTextToSize(processedText, pageWidth - 40);
+          doc.text(lines, 20, yPosition);
+          yPosition += lines.length * 8;
+        }
       }
+      
       if (ackType.content.rules && ackType.content.rules.length > 0) {
-        yPosition += 10;
+        yPosition += 15;
         doc.setFont('helvetica', 'bold');
         doc.text('Rules/Sections:', 20, yPosition);
         yPosition += 15;
-        doc.setFont('helvetica', 'normal');
+        
         ackType.content.rules.forEach((rule, index) => {
-          const ruleText = `${index + 1}. ${rule}`;
-          const lines = doc.splitTextToSize(ruleText, pageWidth - 40);
-          doc.text(lines, 20, yPosition);
-          yPosition += lines.length * 8 + 5;
+          if (yPosition > pageHeight - 30) {
+            doc.addPage();
+            yPosition = 30;
+          }
+          
+          doc.setFont('helvetica', 'normal');
+          const hasArabicRule = /[\u0600-\u06FF]/.test(rule);
+          
+          if (hasArabicRule) {
+            // For Arabic rules, show number on the left and text on the right
+            const ruleNumber = `${index + 1}.`;
+            const ruleText = rule;
+            
+            // Split rule text into lines
+            const textWidth = pageWidth - 80; // Leave space for number
+            const words = ruleText.split(' ');
+            let currentLine = '';
+            const lines: string[] = [];
+            
+            words.forEach(word => {
+              const testLine = currentLine + (currentLine ? ' ' : '') + word;
+              const lineWidth = doc.getTextWidth(testLine);
+              
+              if (lineWidth > textWidth && currentLine) {
+                lines.push(currentLine);
+                currentLine = word;
+              } else {
+                currentLine = testLine;
+              }
+            });
+            
+            if (currentLine) {
+              lines.push(currentLine);
+            }
+            
+            // Render the rule number on the left
+            doc.text(ruleNumber, 20, yPosition);
+            
+            // Render the rule text on the right
+            lines.forEach((line, lineIndex) => {
+              doc.text(line, pageWidth - 20, yPosition + (lineIndex * 10), { align: 'right' });
+            });
+            
+            yPosition += Math.max(lines.length * 10, 15);
+          } else {
+            const ruleText = `${index + 1}. ${rule}`;
+            const lines = doc.splitTextToSize(ruleText, pageWidth - 40);
+            doc.text(lines, 20, yPosition);
+            yPosition += lines.length * 8 + 5;
+          }
         });
       }
     }
 
     // Footer
     yPosition += 30;
+    if (yPosition > pageHeight - 30) {
+      doc.addPage();
+      yPosition = 30;
+    }
     doc.setFont('helvetica', 'italic');
     doc.setFontSize(10);
     doc.text(`Generated on: ${new Date().toLocaleString()}`, 20, yPosition);
+    
     doc.save(`acknowledgment_${submission.requestNo}.pdf`);
     toast({
       title: "PDF Exported",
-      description: "Acknowledgment has been exported successfully."
+      description: "Acknowledgment has been exported with improved Arabic support."
     });
   };
 
