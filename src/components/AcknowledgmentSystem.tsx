@@ -23,6 +23,10 @@ interface AcknowledgmentType {
   title: string;
   description: string;
   icon: any;
+  iconImage?: string;
+  backgroundImage?: string;
+  textColor?: string;
+  textAlignment?: 'left' | 'center' | 'right';
   content?: {
     arabic?: string;
     subtitle?: string;
@@ -80,7 +84,11 @@ export const AcknowledgmentSystem = () => {
     title: '',
     description: '',
     content: '',
-    sections: ['']
+    sections: [''],
+    iconImage: '',
+    backgroundImage: '',
+    textColor: '#000000',
+    textAlignment: 'left' as 'left' | 'center' | 'right'
   });
   const [submissions, setSubmissions] = useState<AcknowledgmentItem[]>([]);
   const [searchName, setSearchName] = useState<string>('');
@@ -134,6 +142,10 @@ export const AcknowledgmentSystem = () => {
       title: newTypeData.title,
       description: newTypeData.description,
       icon: FileText,
+      iconImage: newTypeData.iconImage,
+      backgroundImage: newTypeData.backgroundImage,
+      textColor: newTypeData.textColor,
+      textAlignment: newTypeData.textAlignment,
       content: {
         description: newTypeData.content,
         rules: newTypeData.sections.filter(section => section.trim() !== '')
@@ -144,7 +156,11 @@ export const AcknowledgmentSystem = () => {
       title: '',
       description: '',
       content: '',
-      sections: ['']
+      sections: [''],
+      iconImage: '',
+      backgroundImage: '',
+      textColor: '#000000',
+      textAlignment: 'left' as 'left' | 'center' | 'right'
     });
     setIsAddTypeModalOpen(false);
     toast({
@@ -179,6 +195,21 @@ export const AcknowledgmentSystem = () => {
       title: "Acknowledgment Deleted",
       description: "Acknowledgment type has been deleted successfully."
     });
+  };
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>, type: 'icon' | 'background') => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setNewTypeData({
+          ...newTypeData,
+          [type === 'icon' ? 'iconImage' : 'backgroundImage']: result
+        });
+      };
+      reader.readAsDataURL(file);
+    }
   };
   const handleOpenSubmission = (submission: AcknowledgmentItem) => {
     setSelectedSubmission(submission);
@@ -294,21 +325,43 @@ export const AcknowledgmentSystem = () => {
 
         {/* Acknowledgment Types Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {acknowledgmentTypes.map(type => {
+        {acknowledgmentTypes.map(type => {
           const IconComponent = type.icon;
-          return <Card key={type.id} className="border hover:shadow-elegant transition-all duration-300 cursor-pointer hover:border-primary/50 bg-card/50 backdrop-blur-sm hover:bg-card/80 group" onClick={() => handleTypeSelect(type.id)}>
-                <CardHeader className="text-center relative">
-                  {type.id.startsWith('custom-') && <Button variant="ghost" size="sm" className="absolute top-2 right-2 h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50" onClick={e => {
+          return <Card 
+            key={type.id} 
+            className="border hover:shadow-elegant transition-all duration-300 cursor-pointer hover:border-primary/50 bg-card/50 backdrop-blur-sm hover:bg-card/80 group relative overflow-hidden" 
+            onClick={() => handleTypeSelect(type.id)}
+            style={{
+              backgroundImage: type.backgroundImage ? `url(${type.backgroundImage})` : undefined,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center'
+            }}
+          >
+                {type.backgroundImage && <div className="absolute inset-0 bg-black/20"></div>}
+                <CardHeader className={`text-center relative z-10 ${type.textAlignment === 'center' ? 'text-center' : type.textAlignment === 'right' ? 'text-right' : 'text-left'}`}>
+                  {!type.id.startsWith('default-') && <Button variant="ghost" size="sm" className="absolute top-2 right-2 h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50" onClick={e => {
                 e.stopPropagation();
                 handleDeleteType(type.id);
               }}>
                       <Trash2 className="w-4 h-4" />
                     </Button>}
                   <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-primary flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-glow">
-                    <IconComponent className="w-8 h-8 text-white" />
+                    {type.iconImage ? (
+                      <img src={type.iconImage} alt="Icon" className="w-8 h-8 object-cover rounded-full" />
+                    ) : (
+                      <IconComponent className="w-8 h-8 text-white" />
+                    )}
                   </div>
-                  <CardTitle className="text-lg">{type.title}</CardTitle>
-                  <p className="text-muted-foreground text-sm">
+                  <CardTitle 
+                    className="text-lg" 
+                    style={{ color: type.textColor || undefined }}
+                  >
+                    {type.title}
+                  </CardTitle>
+                  <p 
+                    className="text-muted-foreground text-sm"
+                    style={{ color: type.textColor ? `${type.textColor}CC` : undefined }}
+                  >
                     {type.description}
                   </p>
                 </CardHeader>
@@ -585,6 +638,73 @@ export const AcknowledgmentSystem = () => {
                 ...newTypeData,
                 content: e.target.value
               })} placeholder="Enter detailed acknowledgment content" className="border-gray-300 min-h-[120px]" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Icon Image (Optional)</Label>
+                  <div className="space-y-2">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(e, 'icon')}
+                      className="border-gray-300"
+                    />
+                    {newTypeData.iconImage && (
+                      <div className="w-16 h-16 rounded-full overflow-hidden border">
+                        <img src={newTypeData.iconImage} alt="Icon preview" className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Background Image (Optional)</Label>
+                  <div className="space-y-2">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(e, 'background')}
+                      className="border-gray-300"
+                    />
+                    {newTypeData.backgroundImage && (
+                      <div className="w-full h-20 rounded overflow-hidden border">
+                        <img src={newTypeData.backgroundImage} alt="Background preview" className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Text Color</Label>
+                  <Input
+                    type="color"
+                    value={newTypeData.textColor}
+                    onChange={(e) => setNewTypeData({
+                      ...newTypeData,
+                      textColor: e.target.value
+                    })}
+                    className="border-gray-300 h-10"
+                  />
+                </div>
+                
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Text Alignment</Label>
+                  <select
+                    value={newTypeData.textAlignment}
+                    onChange={(e) => setNewTypeData({
+                      ...newTypeData,
+                      textAlignment: e.target.value as 'left' | 'center' | 'right'
+                    })}
+                    className="w-full h-10 px-3 border border-gray-300 rounded-md"
+                  >
+                    <option value="left">Left</option>
+                    <option value="center">Center</option>
+                    <option value="right">Right</option>
+                  </select>
+                </div>
               </div>
 
               <div>
