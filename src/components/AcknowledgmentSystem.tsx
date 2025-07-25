@@ -7,7 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { FileText, Shield, Laptop, Users, AlertTriangle, CheckCircle, Plus, Trash2, Download, Search } from 'lucide-react';
+import { FileText, Shield, Laptop, Users, AlertTriangle, CheckCircle, Plus, Trash2, Download, Search, Edit } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import jsPDF from 'jspdf';
 interface AcknowledgmentItem {
@@ -27,6 +27,7 @@ interface AcknowledgmentType {
   backgroundImage?: string;
   textColor?: string;
   textAlignment?: 'left' | 'center' | 'right';
+  isArabic?: boolean;
   content?: {
     arabic?: string;
     subtitle?: string;
@@ -39,6 +40,7 @@ const defaultAcknowledgmentTypes: AcknowledgmentType[] = [{
   title: 'Remote Area Working Acknowledgement',
   description: 'إقرار إلتزام بتعليمات العمل في المناطق النائية',
   icon: Laptop,
+  isArabic: true,
   content: {
     arabic: 'إقرار إلتزام بتعليمات العمل في المناطق النائية',
     subtitle: 'Remote Area Working Acknowledgement',
@@ -51,27 +53,33 @@ const defaultAcknowledgmentTypes: AcknowledgmentType[] = [{
   id: 'transfer',
   title: 'Transfer Acknowledgment',
   description: 'Acknowledge transfer policies and procedures',
-  icon: FileText
+  icon: FileText,
+  isArabic: false
 }, {
   id: 'safety',
   title: 'Safety Acknowledgment',
   description: 'Acknowledge safety protocols and guidelines',
-  icon: Shield
+  icon: Shield,
+  isArabic: false
 }, {
   id: 'security',
   title: 'Security Acknowledgment',
   description: 'Acknowledge security policies and data protection',
-  icon: AlertTriangle
+  icon: AlertTriangle,
+  isArabic: false
 }, {
   id: 'training',
   title: 'Training Acknowledgment',
   description: 'Acknowledge completion of mandatory training',
-  icon: Users
+  icon: Users,
+  isArabic: false
 }];
 export const AcknowledgmentSystem = () => {
   const [selectedType, setSelectedType] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddTypeModalOpen, setIsAddTypeModalOpen] = useState(false);
+  const [isEditTypeModalOpen, setIsEditTypeModalOpen] = useState(false);
+  const [editingType, setEditingType] = useState<AcknowledgmentType | null>(null);
   const [isSubmissionModalOpen, setIsSubmissionModalOpen] = useState(false);
   const [selectedSubmission, setSelectedSubmission] = useState<AcknowledgmentItem | null>(null);
   const [acknowledgmentTypes, setAcknowledgmentTypes] = useState<AcknowledgmentType[]>(defaultAcknowledgmentTypes);
@@ -88,7 +96,8 @@ export const AcknowledgmentSystem = () => {
     iconImage: '',
     backgroundImage: '',
     textColor: '#000000',
-    textAlignment: 'left' as 'left' | 'center' | 'right'
+    textAlignment: 'left' as 'left' | 'center' | 'right',
+    isArabic: false
   });
   const [submissions, setSubmissions] = useState<AcknowledgmentItem[]>([]);
   const [searchName, setSearchName] = useState<string>('');
@@ -146,6 +155,7 @@ export const AcknowledgmentSystem = () => {
       backgroundImage: newTypeData.backgroundImage,
       textColor: newTypeData.textColor,
       textAlignment: newTypeData.textAlignment,
+      isArabic: newTypeData.isArabic,
       content: {
         description: newTypeData.content,
         rules: newTypeData.sections.filter(section => section.trim() !== '')
@@ -160,7 +170,8 @@ export const AcknowledgmentSystem = () => {
       iconImage: '',
       backgroundImage: '',
       textColor: '#000000',
-      textAlignment: 'left' as 'left' | 'center' | 'right'
+      textAlignment: 'left' as 'left' | 'center' | 'right',
+      isArabic: false
     });
     setIsAddTypeModalOpen(false);
     toast({
@@ -210,6 +221,71 @@ export const AcknowledgmentSystem = () => {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleEditType = (type: AcknowledgmentType) => {
+    setEditingType(type);
+    setNewTypeData({
+      title: type.title,
+      description: type.description,
+      content: type.content?.description || '',
+      sections: type.content?.rules || [''],
+      iconImage: type.iconImage || '',
+      backgroundImage: type.backgroundImage || '',
+      textColor: type.textColor || '#000000',
+      textAlignment: type.textAlignment || 'left',
+      isArabic: type.isArabic || false
+    });
+    setIsEditTypeModalOpen(true);
+  };
+
+  const handleUpdateType = () => {
+    if (!editingType || !newTypeData.title || !newTypeData.description) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const updatedType: AcknowledgmentType = {
+      ...editingType,
+      title: newTypeData.title,
+      description: newTypeData.description,
+      iconImage: newTypeData.iconImage,
+      backgroundImage: newTypeData.backgroundImage,
+      textColor: newTypeData.textColor,
+      textAlignment: newTypeData.textAlignment,
+      isArabic: newTypeData.isArabic,
+      content: {
+        ...editingType.content,
+        description: newTypeData.content,
+        rules: newTypeData.sections.filter(section => section.trim() !== '')
+      }
+    };
+
+    setAcknowledgmentTypes(acknowledgmentTypes.map(type => 
+      type.id === editingType.id ? updatedType : type
+    ));
+    
+    setNewTypeData({
+      title: '',
+      description: '',
+      content: '',
+      sections: [''],
+      iconImage: '',
+      backgroundImage: '',
+      textColor: '#000000',
+      textAlignment: 'left' as 'left' | 'center' | 'right',
+      isArabic: false
+    });
+    setEditingType(null);
+    setIsEditTypeModalOpen(false);
+    toast({
+      title: "Acknowledgment Updated",
+      description: "Acknowledgment type has been updated successfully."
+    });
   };
   const handleOpenSubmission = (submission: AcknowledgmentItem) => {
     setSelectedSubmission(submission);
@@ -339,12 +415,22 @@ export const AcknowledgmentSystem = () => {
           >
                 {type.backgroundImage && <div className="absolute inset-0 bg-black/20"></div>}
                 <CardHeader className={`text-center relative z-10 ${type.textAlignment === 'center' ? 'text-center' : type.textAlignment === 'right' ? 'text-right' : 'text-left'}`}>
-                  {!type.id.startsWith('default-') && <Button variant="ghost" size="sm" className="absolute top-2 right-2 h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50" onClick={e => {
-                e.stopPropagation();
-                handleDeleteType(type.id);
-              }}>
-                      <Trash2 className="w-4 h-4" />
-                    </Button>}
+                  {!type.id.startsWith('default-') && (
+                    <div className="absolute top-2 right-2 flex gap-1">
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-blue-500 hover:text-blue-700 hover:bg-blue-50" onClick={e => {
+                        e.stopPropagation();
+                        handleEditType(type);
+                      }}>
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50" onClick={e => {
+                        e.stopPropagation();
+                        handleDeleteType(type.id);
+                      }}>
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  )}
                   <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-primary flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-glow">
                     {type.iconImage ? (
                       <img src={type.iconImage} alt="Icon" className="w-8 h-8 object-cover rounded-full" />
@@ -518,7 +604,10 @@ export const AcknowledgmentSystem = () => {
                           className="mt-1 border-blue-500 data-[state=checked]:bg-blue-500" 
                         />
                         <label className="text-sm text-gray-700 leading-relaxed flex-1">
-                          أقر بأنني قد قرأت وفهمت ووافقت على السياسات والإجراءات المذكورة أعلاه
+                          {selectedAck?.isArabic ? 
+                            'أقر بأنني قد قرأت وفهمت ووافقت على السياسات والإجراءات المذكورة أعلاه' : 
+                            'I acknowledge that I have read, understood and agree to the above policies and procedures'
+                          }
                         </label>
                       </div>
                     </div>
@@ -617,7 +706,10 @@ export const AcknowledgmentSystem = () => {
                             className="mt-1 border-blue-500 data-[state=checked]:bg-blue-500" 
                           />
                           <label className="text-sm text-gray-700 leading-relaxed flex-1">
-                            أقر بأنني قد قرأت وفهمت ووافقت على السياسات والإجراءات المذكورة أعلاه
+                            {selectedAck?.isArabic ? 
+                              'أقر بأنني قد قرأت وفهمت ووافقت على السياسات والإجراءات المذكورة أعلاه' : 
+                              'I acknowledge that I have read, understood and agree to the above policies and procedures'
+                            }
                           </label>
                         </div>
                       </div>
@@ -739,6 +831,32 @@ export const AcknowledgmentSystem = () => {
               </div>
 
               <div>
+                <Label className="text-sm font-medium text-gray-700">Language</Label>
+                <div className="flex gap-4 mt-2">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="language"
+                      checked={!newTypeData.isArabic}
+                      onChange={() => setNewTypeData({ ...newTypeData, isArabic: false })}
+                      className="text-blue-600"
+                    />
+                    <span className="text-sm">English</span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="language"
+                      checked={newTypeData.isArabic}
+                      onChange={() => setNewTypeData({ ...newTypeData, isArabic: true })}
+                      className="text-blue-600"
+                    />
+                    <span className="text-sm">Arabic</span>
+                  </label>
+                </div>
+              </div>
+
+              <div>
                 <Label className="text-sm font-medium text-gray-700">Numbered Sections/Rules (Optional)</Label>
                 <div className="space-y-3">
                   {newTypeData.sections.map((section, index) => <div key={index} className="flex gap-2">
@@ -761,6 +879,176 @@ export const AcknowledgmentSystem = () => {
                 Add Type
               </Button>
               <Button variant="outline" onClick={() => setIsAddTypeModalOpen(false)} className="px-6">
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Type Modal */}
+      <Dialog open={isEditTypeModalOpen} onOpenChange={setIsEditTypeModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">Edit Acknowledgment Type</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <div>
+                <Label className="text-sm font-medium text-gray-700">Title *</Label>
+                <Input value={newTypeData.title} onChange={e => setNewTypeData({
+                ...newTypeData,
+                title: e.target.value
+              })} placeholder="Enter acknowledgment title" className="border-gray-300" />
+              </div>
+              
+              <div>
+                <Label className="text-sm font-medium text-gray-700">Description *</Label>
+                <Input value={newTypeData.description} onChange={e => setNewTypeData({
+                ...newTypeData,
+                description: e.target.value
+              })} placeholder="Enter brief description" className="border-gray-300" />
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium text-gray-700">Content (Optional)</Label>
+                <Textarea value={newTypeData.content} onChange={e => setNewTypeData({
+                ...newTypeData,
+                content: e.target.value
+              })} placeholder="Enter detailed acknowledgment content" className="border-gray-300 min-h-[120px]" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Icon Image (Optional)</Label>
+                  <div className="space-y-2">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(e, 'icon')}
+                      className="border-gray-300"
+                    />
+                    {newTypeData.iconImage && (
+                      <div className="w-16 h-16 rounded-full overflow-hidden border">
+                        <img src={newTypeData.iconImage} alt="Icon preview" className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Background Image (Optional)</Label>
+                  <div className="space-y-2">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(e, 'background')}
+                      className="border-gray-300"
+                    />
+                    {newTypeData.backgroundImage && (
+                      <div className="w-full h-20 rounded overflow-hidden border">
+                        <img src={newTypeData.backgroundImage} alt="Background preview" className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Text Color</Label>
+                  <Input
+                    type="color"
+                    value={newTypeData.textColor}
+                    onChange={(e) => setNewTypeData({
+                      ...newTypeData,
+                      textColor: e.target.value
+                    })}
+                    className="border-gray-300 h-10"
+                  />
+                </div>
+                
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Text Alignment</Label>
+                  <select
+                    value={newTypeData.textAlignment}
+                    onChange={(e) => setNewTypeData({
+                      ...newTypeData,
+                      textAlignment: e.target.value as 'left' | 'center' | 'right'
+                    })}
+                    className="w-full h-10 px-3 border border-gray-300 rounded-md"
+                  >
+                    <option value="left">Left</option>
+                    <option value="center">Center</option>
+                    <option value="right">Right</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium text-gray-700">Language</Label>
+                <div className="flex gap-4 mt-2">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="editLanguage"
+                      checked={!newTypeData.isArabic}
+                      onChange={() => setNewTypeData({ ...newTypeData, isArabic: false })}
+                      className="text-blue-600"
+                    />
+                    <span className="text-sm">English</span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="editLanguage"
+                      checked={newTypeData.isArabic}
+                      onChange={() => setNewTypeData({ ...newTypeData, isArabic: true })}
+                      className="text-blue-600"
+                    />
+                    <span className="text-sm">Arabic</span>
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium text-gray-700">Numbered Sections/Rules (Optional)</Label>
+                <div className="space-y-3">
+                  {newTypeData.sections.map((section, index) => <div key={index} className="flex gap-2">
+                      <span className="text-sm text-gray-500 mt-2 min-w-[20px]">{index + 1}.</span>
+                      <Textarea value={section} onChange={e => updateSection(index, e.target.value)} placeholder={`Enter section ${index + 1} content`} className="border-gray-300 flex-1" rows={2} />
+                      {newTypeData.sections.length > 1 && <Button type="button" variant="outline" size="sm" onClick={() => removeSection(index)} className="mt-1 text-red-600 hover:text-red-700">
+                          Remove
+                        </Button>}
+                    </div>)}
+                  <Button type="button" variant="outline" size="sm" onClick={addSection} className="text-blue-600 hover:text-blue-700">
+                    <Plus className="w-4 h-4 mr-1" />
+                    Add Section
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <Button onClick={handleUpdateType} className="bg-blue-600 hover:bg-blue-700 text-white px-6">
+                Update Type
+              </Button>
+              <Button variant="outline" onClick={() => {
+                setIsEditTypeModalOpen(false);
+                setEditingType(null);
+                setNewTypeData({
+                  title: '',
+                  description: '',
+                  content: '',
+                  sections: [''],
+                  iconImage: '',
+                  backgroundImage: '',
+                  textColor: '#000000',
+                  textAlignment: 'left' as 'left' | 'center' | 'right',
+                  isArabic: false
+                });
+              }} className="px-6">
                 Cancel
               </Button>
             </div>
