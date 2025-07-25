@@ -428,17 +428,18 @@ export const AcknowledgmentSystem = () => {
 
       {/* Acknowledgment Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
           <div className="bg-white p-8 space-y-6">
             {selectedAck?.id === 'remote-work' && selectedAck.content ? <>
                 {/* Header with Arabic title */}
-                <div className="text-center border-b pb-6">
-                  <h1 className="text-2xl font-bold text-red-600 mb-2" dir="rtl">
+                <div className="text-center space-y-3 pb-6">
+                  <h1 className="text-2xl font-bold text-red-600" dir="rtl">
                     {selectedAck.content.arabic}
                   </h1>
-                  <h2 className="text-lg text-gray-700">
+                  <h2 className="text-lg text-gray-700 font-medium">
                     {selectedAck.content.subtitle}
                   </h2>
+                  <hr className="border-gray-300 mx-auto w-full" />
                 </div>
 
                 {/* Content */}
@@ -449,18 +450,23 @@ export const AcknowledgmentSystem = () => {
                     </p>
                   </div>
 
-                   {selectedAck.content.rules && <div className="text-right" dir="rtl">
-                       <ol className="list-decimal list-inside space-y-2 text-gray-800">
-                         {selectedAck.content.rules.map((rule, index) => <li key={index} className="leading-relaxed">
-                             {rule}
-                           </li>)}
-                       </ol>
-                     </div>}
+                   {selectedAck.content.rules && <div className="text-right space-y-3" dir="rtl">
+                        {selectedAck.content.rules.map((rule, index) => (
+                          <div key={index} className="flex items-start gap-3 justify-end">
+                            <span className="text-gray-800 leading-relaxed flex-1 text-right">
+                              {rule}
+                            </span>
+                            <span className="text-gray-800 font-medium min-w-[20px] text-right">
+                              .{index + 1}
+                            </span>
+                          </div>
+                        ))}
+                      </div>}
                 </div>
 
                 {/* Notice */}
-                <div className="bg-blue-50 border border-blue-200 rounded p-4">
-                  <div className="flex items-start gap-2">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
                     <div className="w-4 h-4 bg-blue-500 rounded-full flex-shrink-0 mt-1"></div>
                     <p className="text-blue-800 text-sm">
                       The content of this item will be sent as an e-mail message to the person or group assigned to the item.
@@ -469,62 +475,73 @@ export const AcknowledgmentSystem = () => {
                 </div>
 
                 {/* Form */}
-                <div className="bg-gray-50 p-6 space-y-4">
-                  <h3 className="font-semibold text-gray-700 bg-gray-200 px-3 py-2">Request Information</h3>
+                <div className="space-y-6">
+                  <div className="bg-gray-100 px-4 py-3 -mx-8">
+                    <h3 className="font-semibold text-gray-700">Request Information</h3>
+                  </div>
                   
-                  <div className="grid grid-cols-1 gap-4">
-                    <div className="grid grid-cols-3 items-center gap-4">
+                  <div className="space-y-6 px-4">
+                    <div className="space-y-2">
                       <Label className="text-sm font-medium text-gray-700">Request No:</Label>
-                      <div className="col-span-2">
-                        <Input value={formData.requestNo} onChange={e => setFormData({
-                      ...formData,
-                      requestNo: e.target.value
-                    })} className="border-gray-300" />
-                      </div>
+                      <Input 
+                        value={formData.requestNo} 
+                        onChange={e => setFormData({
+                          ...formData,
+                          requestNo: e.target.value
+                        })} 
+                        className="bg-gray-900 text-white border-2 border-blue-500 focus:border-blue-400 rounded-md h-10" 
+                      />
                     </div>
                     
-                    <div className="grid grid-cols-3 items-center gap-4">
+                    <div className="space-y-2">
                       <Label className="text-sm font-medium text-gray-700">Employee Name:</Label>
-                      <div className="col-span-2">
-                        <Input value={formData.employeeName} onChange={e => setFormData({
-                      ...formData,
-                      employeeName: e.target.value
-                    })} className="border-gray-300" placeholder="Enter employee name" />
-                      </div>
+                      <Input 
+                        value={formData.employeeName} 
+                        onChange={e => setFormData({
+                          ...formData,
+                          employeeName: e.target.value
+                        })} 
+                        className="bg-gray-900 text-white border-2 border-blue-500 focus:border-blue-400 rounded-md h-10" 
+                        placeholder="Enter employee name" 
+                      />
                     </div>
 
-                    <div className="grid grid-cols-3 items-start gap-4">
+                    <div className="space-y-3">
                       <Label className="text-sm font-medium text-gray-700">Acknowledgment *</Label>
-                      <div className="col-span-2">
-                        <div className="flex items-start space-x-2">
-                          <Checkbox checked={formData.acknowledged} onCheckedChange={checked => setFormData({
-                        ...formData,
-                        acknowledged: checked as boolean
-                      })} className="mt-1" />
-                          <label className="text-sm text-gray-700 leading-relaxed">
-                            I acknowledge that I have read, understood and agree to the above policies and procedures
-                          </label>
-                        </div>
+                      <div className="flex items-start space-x-3">
+                        <Checkbox 
+                          checked={formData.acknowledged} 
+                          onCheckedChange={checked => setFormData({
+                            ...formData,
+                            acknowledged: checked as boolean
+                          })} 
+                          className="mt-1 border-blue-500 data-[state=checked]:bg-blue-500" 
+                        />
+                        <label className="text-sm text-gray-700 leading-relaxed flex-1">
+                          I acknowledge that I have read, understood and agree to the above policies and procedures
+                        </label>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Buttons */}
-                <div className="flex gap-3 pt-4">
-                  <Button onClick={handleSubmit} className="bg-green-600 hover:bg-green-700 text-white px-6">
+                <div className="flex gap-3 pt-6 px-4">
+                  <Button onClick={handleSubmit} className="bg-green-600 hover:bg-green-700 text-white px-8 py-2 rounded-md font-medium">
                     Submit
                   </Button>
-                  <Button variant="destructive" onClick={() => setIsModalOpen(false)} className="bg-red-600 hover:bg-red-700 px-6">
+                  <Button onClick={() => setIsModalOpen(false)} className="bg-red-600 hover:bg-red-700 text-white px-8 py-2 rounded-md font-medium">
                     Cancel
                   </Button>
                 </div>
               </> : <>
-                <DialogHeader>
-                  <DialogTitle className="text-2xl">
+                {/* Default modal for other acknowledgment types */}
+                <div className="text-center space-y-3 pb-6">
+                  <h1 className="text-2xl font-bold text-gray-800">
                     {selectedAck?.title}
-                  </DialogTitle>
-                </DialogHeader>
+                  </h1>
+                  <hr className="border-gray-300 mx-auto w-full" />
+                </div>
                 
                 <div className="space-y-6">
                   {/* Content */}
@@ -535,16 +552,21 @@ export const AcknowledgmentSystem = () => {
                     </div>}
 
                   {/* Numbered Rules */}
-                  {selectedAck?.content?.rules && selectedAck.content.rules.length > 0 && <div className="text-right" dir="rtl">
-                      <ol className="list-decimal list-inside space-y-2 text-gray-800">
-                        {selectedAck.content.rules.map((rule, index) => <li key={index} className="leading-relaxed">
+                  {selectedAck?.content?.rules && selectedAck.content.rules.length > 0 && <div className="text-right space-y-3" dir="rtl">
+                      {selectedAck.content.rules.map((rule, index) => (
+                        <div key={index} className="flex items-start gap-3 justify-end">
+                          <span className="text-gray-800 leading-relaxed flex-1 text-right">
                             {rule}
-                          </li>)}
-                      </ol>
+                          </span>
+                          <span className="text-gray-800 font-medium min-w-[20px] text-right">
+                            .{index + 1}
+                          </span>
+                        </div>
+                      ))}
                     </div>}
 
-                  <div className="bg-blue-50 border border-blue-200 rounded p-4">
-                    <div className="flex items-start gap-2">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
                       <div className="w-4 h-4 bg-blue-500 rounded-full flex-shrink-0 mt-1"></div>
                       <p className="text-blue-800 text-sm">
                         The content of this item will be sent as an e-mail message to the person or group assigned to the item.
@@ -552,52 +574,61 @@ export const AcknowledgmentSystem = () => {
                     </div>
                   </div>
 
-                  <div className="bg-gray-50 p-6 space-y-4">
-                    <h3 className="font-semibold text-gray-700 bg-gray-200 px-3 py-2">Request Information</h3>
+                  <div className="space-y-6">
+                    <div className="bg-gray-100 px-4 py-3 -mx-8">
+                      <h3 className="font-semibold text-gray-700">Request Information</h3>
+                    </div>
                     
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-3 items-center gap-4">
+                    <div className="space-y-6 px-4">
+                      <div className="space-y-2">
                         <Label className="text-sm font-medium text-gray-700">Request No:</Label>
-                        <div className="col-span-2">
-                          <Input value={formData.requestNo} onChange={e => setFormData({
-                        ...formData,
-                        requestNo: e.target.value
-                      })} className="border-gray-300" />
-                        </div>
+                        <Input 
+                          value={formData.requestNo} 
+                          onChange={e => setFormData({
+                            ...formData,
+                            requestNo: e.target.value
+                          })} 
+                          className="bg-gray-900 text-white border-2 border-blue-500 focus:border-blue-400 rounded-md h-10" 
+                        />
                       </div>
                       
-                      <div className="grid grid-cols-3 items-center gap-4">
+                      <div className="space-y-2">
                         <Label className="text-sm font-medium text-gray-700">Employee Name:</Label>
-                        <div className="col-span-2">
-                          <Input value={formData.employeeName} onChange={e => setFormData({
-                        ...formData,
-                        employeeName: e.target.value
-                      })} className="border-gray-300" placeholder="Enter employee name" />
-                        </div>
+                        <Input 
+                          value={formData.employeeName} 
+                          onChange={e => setFormData({
+                            ...formData,
+                            employeeName: e.target.value
+                          })} 
+                          className="bg-gray-900 text-white border-2 border-blue-500 focus:border-blue-400 rounded-md h-10" 
+                          placeholder="Enter employee name" 
+                        />
                       </div>
 
-                      <div className="grid grid-cols-3 items-start gap-4">
+                      <div className="space-y-3">
                         <Label className="text-sm font-medium text-gray-700">Acknowledgment *</Label>
-                        <div className="col-span-2">
-                          <div className="flex items-start space-x-2">
-                            <Checkbox checked={formData.acknowledged} onCheckedChange={checked => setFormData({
-                          ...formData,
-                          acknowledged: checked as boolean
-                        })} className="mt-1" />
-                            <label className="text-sm text-gray-700 leading-relaxed">
-                              I acknowledge that I have read, understood and agree to the above policies and procedures
-                            </label>
-                          </div>
+                        <div className="flex items-start space-x-3">
+                          <Checkbox 
+                            checked={formData.acknowledged} 
+                            onCheckedChange={checked => setFormData({
+                              ...formData,
+                              acknowledged: checked as boolean
+                            })} 
+                            className="mt-1 border-blue-500 data-[state=checked]:bg-blue-500" 
+                          />
+                          <label className="text-sm text-gray-700 leading-relaxed flex-1">
+                            I acknowledge that I have read, understood and agree to the above policies and procedures
+                          </label>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex gap-3 pt-4">
-                    <Button onClick={handleSubmit} className="bg-green-600 hover:bg-green-700 text-white px-6">
+                  <div className="flex gap-3 pt-6 px-4">
+                    <Button onClick={handleSubmit} className="bg-green-600 hover:bg-green-700 text-white px-8 py-2 rounded-md font-medium">
                       Submit
                     </Button>
-                    <Button variant="destructive" onClick={() => setIsModalOpen(false)} className="bg-red-600 hover:bg-red-700 px-6">
+                    <Button onClick={() => setIsModalOpen(false)} className="bg-red-600 hover:bg-red-700 text-white px-8 py-2 rounded-md font-medium">
                       Cancel
                     </Button>
                   </div>
