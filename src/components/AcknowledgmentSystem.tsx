@@ -626,9 +626,14 @@ export const AcknowledgmentSystem = () => {
               </> : <>
                 {/* Default modal for other acknowledgment types */}
                 <div className="text-center space-y-3 pb-6">
-                  <h1 className="text-2xl font-bold text-gray-800">
+                  {selectedAck?.isArabic && (
+                    <h1 className="text-2xl font-bold text-red-600" dir="rtl">
+                      {selectedAck?.description}
+                    </h1>
+                  )}
+                  <h2 className="text-lg text-gray-700 font-medium">
                     {selectedAck?.title}
-                  </h1>
+                  </h2>
                   <hr className="border-gray-300 mx-auto w-full" />
                 </div>
                 
