@@ -1259,10 +1259,10 @@
                 return `
                     <!-- Header with Arabic title -->
                     <div class="text-center space-y-3" style="padding-bottom: 1.5rem;">
-                        <h1 class="text-2xl font-bold" style="color: #dc2626;" dir="rtl">
+                        <h1 class="text-2xl font-bold" style="color: var(--destructive);" dir="rtl">
                             ${selectedAck.content.arabic}
                         </h1>
-                        <h2 class="text-lg font-medium" style="color: #374151;">
+                        <h2 class="text-lg font-medium" style="color: var(--foreground);">
                             ${selectedAck.content.subtitle}
                         </h2>
                         <hr class="separator">
@@ -1271,14 +1271,14 @@
                     <!-- Content -->
                     <div class="space-y-6">
                         <div class="text-right" dir="rtl">
-                            <p style="color: #1f2937; line-height: 1.6;">${selectedAck.content.description}</p>
+                            <p style="color: var(--foreground); line-height: 1.6;">${selectedAck.content.description}</p>
                         </div>
 
                         ${selectedAck.content.rules ? `
                             <div class="text-right numbered-list" dir="rtl">
                                 ${selectedAck.content.rules.map(rule => `
                                     <div class="list-item">
-                                        <span style="color: #1f2937; line-height: 1.6; flex: 1; text-align: right;">
+                                        <span style="color: var(--foreground); line-height: 1.6; flex: 1; text-align: right;">
                                             ${rule}
                                         </span>
                                     </div>
@@ -1321,7 +1321,7 @@
                                     <input type="checkbox" class="checkbox" ${formData.acknowledged ? 'checked' : ''} 
                                            onchange="updateFormData('acknowledged', this.checked)"
                                            style="border: 2px solid var(--primary);">
-                                    <label class="text-sm" style="color: #374151; line-height: 1.6; flex: 1;">
+                                    <label class="text-sm" style="color: var(--foreground); line-height: 1.6; flex: 1;">
                                         ${selectedAck.isArabic ? 
                                             'أقر بأنني قد قرأت وفهمت ووافقت على السياسات والإجراءات المذكورة أعلاه' : 
                                             'I acknowledge that I have read, understood and agree to the above policies and procedures'
@@ -1346,7 +1346,7 @@
                 return `
                     <!-- Default modal for other acknowledgment types -->
                     <div class="text-center space-y-3" style="padding-bottom: 1.5rem;">
-                        <h1 class="text-2xl font-bold" style="color: #1f2937;">
+                        <h1 class="text-2xl font-bold" style="color: var(--foreground);">
                             ${selectedAck.title}
                         </h1>
                         <hr class="separator">
@@ -1356,7 +1356,7 @@
                         <!-- Content -->
                         ${selectedAck.content?.description ? `
                             <div class="text-right" dir="rtl">
-                                <p style="color: #1f2937; line-height: 1.6; white-space: pre-line;">
+                                <p style="color: var(--foreground); line-height: 1.6; white-space: pre-line;">
                                     ${selectedAck.content.description}
                                 </p>
                             </div>
@@ -1367,7 +1367,7 @@
                             <div class="text-right numbered-list" dir="rtl">
                                 ${selectedAck.content.rules.map(rule => `
                                     <div class="list-item">
-                                        <span style="color: #1f2937; line-height: 1.6; flex: 1; text-align: right;">
+                                        <span style="color: var(--foreground); line-height: 1.6; flex: 1; text-align: right;">
                                             ${rule}
                                         </span>
                                     </div>
@@ -1407,7 +1407,7 @@
                                         <input type="checkbox" class="checkbox" ${formData.acknowledged ? 'checked' : ''} 
                                                onchange="updateFormData('acknowledged', this.checked)"
                                                style="border: 2px solid var(--primary);">
-                                        <label class="text-sm" style="color: #374151; line-height: 1.6; flex: 1;">
+                                        <label class="text-sm" style="color: var(--foreground); line-height: 1.6; flex: 1;">
                                             ${selectedAck.isArabic ? 
                                                 'أقر بأنني قد قرأت وفهمت ووافقت على السياسات والإجراءات المذكورة أعلاه' : 
                                                 'I acknowledge that I have read, understood and agree to the above policies and procedures'
