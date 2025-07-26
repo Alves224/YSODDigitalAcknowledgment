@@ -1131,7 +1131,7 @@
         function renderAcknowledmentTypes() {
             const container = document.getElementById('acknowledgment-types');
             container.innerHTML = acknowledgmentTypes.map(type => {
-                const canEdit = !type.id.startsWith('default-');
+                const canEdit = type.id.startsWith('custom-');
                 return `
                     <div class="card acknowledgment-card" 
                          onclick="selectType('${type.id}')"
@@ -1508,7 +1508,8 @@
             
             // Set language radio
             const isArabic = type.isArabic || false;
-            document.querySelector(`input[name="edit-language"][value="${isArabic}"]`).checked = true;
+            const languageRadio = document.querySelector(`input[name="edit-language"][value="${isArabic}"]`);
+            if (languageRadio) languageRadio.checked = true;
             
             // Set images
             if (type.iconImage) {
