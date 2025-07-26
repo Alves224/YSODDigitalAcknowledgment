@@ -229,6 +229,8 @@
             max-height: 90vh;
             overflow-y: auto;
             box-shadow: var(--shadow-elegant);
+            margin: auto;
+            position: relative;
         }
 
         .modal-header {
@@ -823,13 +825,13 @@
 
     <!-- Acknowledgment Modal -->
     <div id="acknowledgment-modal" class="modal">
-        <div class="modal-content max-w-4xl">
+        <div class="modal-content max-w-4xl" style="margin: auto; transform: translateY(0);">
             <div class="modal-header">
-                <h2 id="modal-title" class="text-xl font-bold">Acknowledgment</h2>
+                <h2 id="modal-title" class="text-xl font-bold text-center">Acknowledgment</h2>
                 <button class="modal-close" onclick="closeAcknowledgmentModal()">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="acknowledgment-form" id="modal-content">
+                <div class="acknowledgment-form text-center" id="modal-content">
                     <!-- Content will be dynamically populated -->
                 </div>
             </div>
