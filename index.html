@@ -1,24 +1,1997 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>digital-agree-confirm</title>
-    <meta name="description" content="Lovable Generated Project" />
-    <meta name="author" content="Lovable" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YSOD Digital Acknowledgment Form Hub</title>
+    <script src="https://unpkg.com/jspdf@latest/dist/jspdf.min.js"></script>
+    <style>
+        /* Design System - CSS Variables */
+        :root {
+            --background: hsl(0, 0%, 100%);
+            --foreground: hsl(222.2, 84%, 4.9%);
+            --card: hsl(0, 0%, 100%);
+            --card-foreground: hsl(222.2, 84%, 4.9%);
+            --popover: hsl(0, 0%, 100%);
+            --popover-foreground: hsl(222.2, 84%, 4.9%);
+            --primary: hsl(246, 100%, 50%);
+            --primary-foreground: hsl(210, 40%, 98%);
+            --primary-glow: hsl(266, 100%, 65%);
+            --secondary: hsl(210, 40%, 96.1%);
+            --secondary-foreground: hsl(222.2, 47.4%, 11.2%);
+            --muted: hsl(210, 40%, 96.1%);
+            --muted-foreground: hsl(215.4, 16.3%, 46.9%);
+            --accent: hsl(266, 100%, 65%);
+            --accent-foreground: hsl(210, 40%, 98%);
+            --destructive: hsl(0, 84.2%, 60.2%);
+            --destructive-foreground: hsl(210, 40%, 98%);
+            --border: hsl(214.3, 31.8%, 91.4%);
+            --input: hsl(214.3, 31.8%, 91.4%);
+            --ring: hsl(246, 100%, 50%);
+            --success: hsl(142, 76%, 36%);
+            --success-foreground: hsl(210, 40%, 98%);
+            --shadow-glow: 0 0 40px hsl(246, 100%, 50%, 0.3);
+            --shadow-elegant: 0 10px 30px -10px hsl(246, 100%, 50%, 0.2);
+            --shadow-soft: 0 4px 20px -4px hsl(246, 100%, 50%, 0.1);
+            --radius: 0.75rem;
+        }
 
-    <meta property="og:title" content="digital-agree-confirm" />
-    <meta property="og:description" content="Lovable Generated Project" />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+        .dark {
+            --background: hsl(222.2, 84%, 4.9%);
+            --foreground: hsl(210, 40%, 98%);
+            --card: hsl(222.2, 84%, 4.9%);
+            --card-foreground: hsl(210, 40%, 98%);
+            --popover: hsl(222.2, 84%, 4.9%);
+            --popover-foreground: hsl(210, 40%, 98%);
+            --primary: hsl(246, 100%, 50%);
+            --primary-foreground: hsl(210, 40%, 98%);
+            --primary-glow: hsl(266, 100%, 65%);
+            --secondary: hsl(217.2, 32.6%, 17.5%);
+            --secondary-foreground: hsl(210, 40%, 98%);
+            --muted: hsl(217.2, 32.6%, 17.5%);
+            --muted-foreground: hsl(215, 20.2%, 65.1%);
+            --accent: hsl(266, 100%, 65%);
+            --accent-foreground: hsl(210, 40%, 98%);
+            --destructive: hsl(0, 62.8%, 30.6%);
+            --destructive-foreground: hsl(210, 40%, 98%);
+            --border: hsl(217.2, 32.6%, 17.5%);
+            --input: hsl(217.2, 32.6%, 17.5%);
+            --ring: hsl(246, 100%, 50%);
+            --success: hsl(142, 76%, 36%);
+            --success-foreground: hsl(210, 40%, 98%);
+            --shadow-glow: 0 0 40px hsl(246, 100%, 50%, 0.4);
+            --shadow-elegant: 0 10px 30px -10px hsl(246, 100%, 50%, 0.3);
+            --shadow-soft: 0 4px 20px -4px hsl(246, 100%, 50%, 0.2);
+        }
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@lovable_dev" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-  </head>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+        body {
+            background-color: var(--background);
+            color: var(--foreground);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+
+        /* Utility Classes */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-glow));
+            color: var(--primary-foreground);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: var(--secondary-foreground);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--muted);
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: var(--success-foreground);
+        }
+
+        .btn-success:hover {
+            background-color: hsl(142, 76%, 30%);
+        }
+
+        .btn-destructive {
+            background-color: var(--destructive);
+            color: var(--destructive-foreground);
+        }
+
+        .btn-destructive:hover {
+            background-color: hsl(0, 84.2%, 55%);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--foreground);
+        }
+
+        .btn-ghost:hover {
+            background-color: var(--muted);
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .input {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: calc(var(--radius) - 2px);
+            background-color: var(--background);
+            color: var(--foreground);
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .input:focus {
+            outline: none;
+            border-color: var(--ring);
+            box-shadow: 0 0 0 2px hsl(var(--ring), 0.2);
+        }
+
+        .textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .card {
+            background-color: var(--card);
+            color: var(--card-foreground);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-soft);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-elegant);
+            border-color: hsl(var(--primary), 0.5);
+        }
+
+        .card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: var(--card);
+            border-radius: var(--radius);
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-elegant);
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--muted-foreground);
+        }
+
+        .modal-close:hover {
+            color: var(--foreground);
+        }
+
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .grid-cols-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .grid-cols-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        @media (max-width: 768px) {
+            .grid-cols-2,
+            .grid-cols-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .space-y-2 > * + * {
+            margin-top: 0.5rem;
+        }
+
+        .space-y-3 > * + * {
+            margin-top: 0.75rem;
+        }
+
+        .space-y-4 > * + * {
+            margin-top: 1rem;
+        }
+
+        .space-y-6 > * + * {
+            margin-top: 1.5rem;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-sm {
+            font-size: 0.875rem;
+        }
+
+        .text-lg {
+            font-size: 1.125rem;
+        }
+
+        .text-xl {
+            font-size: 1.25rem;
+        }
+
+        .text-2xl {
+            font-size: 1.5rem;
+        }
+
+        .text-4xl {
+            font-size: 2.25rem;
+        }
+
+        .font-bold {
+            font-weight: 700;
+        }
+
+        .font-medium {
+            font-weight: 500;
+        }
+
+        .text-primary {
+            color: var(--primary);
+        }
+
+        .text-muted {
+            color: var(--muted-foreground);
+        }
+
+        .text-success {
+            color: var(--success);
+        }
+
+        .text-destructive {
+            color: var(--destructive);
+        }
+
+        .bg-gradient {
+            background: linear-gradient(135deg, var(--primary), var(--primary-glow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Background decorations */
+        .bg-decoration {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .bg-decoration::before,
+        .bg-decoration::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(3rem);
+            opacity: 0.1;
+        }
+
+        .bg-decoration::before {
+            top: -10rem;
+            right: -10rem;
+            width: 20rem;
+            height: 20rem;
+            background: linear-gradient(135deg, var(--primary), var(--primary-glow));
+        }
+
+        .bg-decoration::after {
+            bottom: -10rem;
+            left: -10rem;
+            width: 24rem;
+            height: 24rem;
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+        }
+
+        /* Form styles */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--foreground);
+        }
+
+        .checkbox {
+            width: 1rem;
+            height: 1rem;
+            accent-color: var(--primary);
+        }
+
+        .icon {
+            width: 1rem;
+            height: 1rem;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .icon-lg {
+            width: 2rem;
+            height: 2rem;
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            box-shadow: var(--shadow-elegant);
+            z-index: 1001;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .toast-description {
+            font-size: 0.875rem;
+            color: var(--muted-foreground);
+        }
+
+        .toast.destructive {
+            border-color: var(--destructive);
+            color: var(--destructive);
+        }
+
+        .theme-toggle {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background-color: var(--background);
+            cursor: pointer;
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--muted);
+        }
+
+        /* Arabic RTL support */
+        [dir="rtl"] {
+            direction: rtl;
+            text-align: right;
+        }
+
+        .acknowledgment-card {
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            background-color: var(--card);
+            backdrop-filter: blur(8px);
+        }
+
+        .acknowledgment-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: inherit;
+            opacity: 0.5;
+        }
+
+        .acknowledgment-card .card-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .icon-container {
+            width: 4rem;
+            height: 4rem;
+            margin: 0 auto 1rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-glow));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-glow);
+            transition: transform 0.3s ease;
+        }
+
+        .acknowledgment-card:hover .icon-container {
+            transform: scale(1.1);
+        }
+
+        .actions-container {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            display: flex;
+            gap: 0.25rem;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .acknowledgment-card:hover .actions-container {
+            opacity: 1;
+        }
+
+        .search-container {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted-foreground);
+            pointer-events: none;
+        }
+
+        .search-input {
+            padding-left: 2.5rem;
+        }
+
+        .submission-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .submission-item:hover {
+            background-color: var(--muted);
+        }
+
+        .notice-box {
+            background-color: hsl(210, 100%, 97%);
+            border: 1px solid hsl(210, 100%, 80%);
+            border-radius: var(--radius);
+            padding: 1rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .dark .notice-box {
+            background-color: hsl(210, 100%, 10%);
+            border-color: hsl(210, 100%, 20%);
+        }
+
+        .notice-indicator {
+            width: 1rem;
+            height: 1rem;
+            background-color: hsl(210, 100%, 50%);
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 0.125rem;
+        }
+
+        .acknowledgment-form {
+            background-color: white;
+            padding: 2rem;
+        }
+
+        .dark .acknowledgment-form {
+            background-color: var(--card);
+        }
+
+        .form-section-header {
+            background-color: hsl(210, 40%, 96%);
+            padding: 0.75rem 1rem;
+            margin: 0 -2rem 1.5rem;
+            font-weight: 600;
+            color: hsl(215, 20%, 40%);
+        }
+
+        .dark .form-section-header {
+            background-color: hsl(217, 32%, 20%);
+            color: hsl(215, 20%, 65%);
+        }
+
+        .form-input-dark {
+            background-color: hsl(222, 84%, 5%);
+            color: white;
+            border: 2px solid var(--primary);
+        }
+
+        .form-input-dark:focus {
+            border-color: var(--primary-glow);
+        }
+
+        .separator {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 1.5rem auto;
+            width: 100%;
+        }
+
+        .numbered-list {
+            counter-reset: list-counter;
+        }
+
+        .numbered-list .list-item {
+            counter-increment: list-counter;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .numbered-list .list-item::before {
+            content: counter(list-counter) ".";
+            font-weight: 500;
+            min-width: 1.25rem;
+            text-align: left;
+            color: var(--foreground);
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .justify-end {
+            justify-content: flex-end;
+        }
+
+        .gap-2 {
+            gap: 0.5rem;
+        }
+
+        .gap-3 {
+            gap: 0.75rem;
+        }
+
+        .gap-4 {
+            gap: 1rem;
+        }
+
+        .mb-4 {
+            margin-bottom: 1rem;
+        }
+
+        .mb-6 {
+            margin-bottom: 1.5rem;
+        }
+
+        .mb-12 {
+            margin-bottom: 3rem;
+        }
+
+        .mt-1 {
+            margin-top: 0.25rem;
+        }
+
+        .mt-2 {
+            margin-top: 0.5rem;
+        }
+
+        .px-6 {
+            padding-left: 1.5rem;
+            padding-right: 1.5rem;
+        }
+
+        .py-8 {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+
+        .relative {
+            position: relative;
+        }
+
+        .min-h-screen {
+            min-height: 100vh;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .opacity-50 {
+            opacity: 0.5;
+        }
+
+        .w-full {
+            width: 100%;
+        }
+
+        .max-w-2xl {
+            max-width: 42rem;
+        }
+
+        .max-w-4xl {
+            max-width: 56rem;
+        }
+
+        .overflow-y-auto {
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen relative">
+        <!-- Background decorations -->
+        <div class="bg-decoration"></div>
+
+        <div class="container py-8 relative" style="z-index: 10;">
+            <!-- Header with Theme Toggle -->
+            <div class="flex justify-between items-center mb-12">
+                <div class="text-center" style="flex: 1;">
+                    <h1 class="text-4xl font-bold bg-gradient mb-4">
+                        YSOD Digital Acknowledgment Form Hub
+                    </h1>
+                    <p class="text-muted text-lg" style="max-width: 32rem; margin: 0 auto;">
+                        Select the type of acknowledgment you need to complete
+                    </p>
+                </div>
+                <div style="margin-left: 2rem;">
+                    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+                        <span id="theme-icon">🌙</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Add New Type Button -->
+            <div class="flex justify-end mb-6">
+                <button class="btn btn-primary" onclick="openAddTypeModal()">
+                    <span>+</span>
+                    Add New Acknowledgment Type
+                </button>
+            </div>
+
+            <!-- Acknowledgment Types Grid -->
+            <div class="grid grid-cols-3 mb-12" id="acknowledgment-types">
+                <!-- Types will be rendered here -->
+            </div>
+
+            <!-- Recent Submissions -->
+            <div class="card" id="submissions-section" style="display: none;">
+                <div class="card-header">
+                    <h2 class="card-title flex items-center gap-2">
+                        <span style="color: var(--success);">✓</span>
+                        Your Submissions
+                    </h2>
+                </div>
+                <div class="card-content">
+                    <!-- Search Field -->
+                    <div class="search-container">
+                        <span class="search-icon">🔍</span>
+                        <input
+                            type="text"
+                            class="input search-input"
+                            placeholder="Search by employee name to view your submissions..."
+                            id="search-input"
+                            onkeyup="filterSubmissions()"
+                        />
+                    </div>
+
+                    <!-- Submissions List -->
+                    <div id="submissions-list">
+                        <!-- Submissions will be rendered here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acknowledgment Modal -->
+    <div id="acknowledgment-modal" class="modal">
+        <div class="modal-content max-w-4xl">
+            <div class="modal-header">
+                <h2 id="modal-title" class="text-xl font-bold">Acknowledgment</h2>
+                <button class="modal-close" onclick="closeAcknowledgmentModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="acknowledgment-form" id="modal-content">
+                    <!-- Content will be dynamically populated -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Type Modal -->
+    <div id="add-type-modal" class="modal">
+        <div class="modal-content max-w-2xl">
+            <div class="modal-header">
+                <h2 class="text-xl font-bold">Add New Acknowledgment Type</h2>
+                <button class="modal-close" onclick="closeAddTypeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="add-type-form" class="space-y-6">
+                    <div class="form-group">
+                        <label class="label">Title *</label>
+                        <input type="text" class="input" id="type-title" placeholder="Enter acknowledgment title" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="label">Description *</label>
+                        <input type="text" class="input" id="type-description" placeholder="Enter brief description" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label">Content (Optional)</label>
+                        <textarea class="input textarea" id="type-content" placeholder="Enter detailed acknowledgment content"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label class="label">Icon Image (Optional)</label>
+                            <input type="file" class="input" id="type-icon" accept="image/*" onchange="handleImageUpload(event, 'icon')">
+                            <div id="icon-preview" class="hidden mt-2"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="label">Background Image (Optional)</label>
+                            <input type="file" class="input" id="type-background" accept="image/*" onchange="handleImageUpload(event, 'background')">
+                            <div id="background-preview" class="hidden mt-2"></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label class="label">Text Color</label>
+                            <input type="color" class="input" id="type-text-color" value="#000000">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="label">Text Alignment</label>
+                            <select class="input" id="type-text-alignment">
+                                <option value="left">Left</option>
+                                <option value="center">Center</option>
+                                <option value="right">Right</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label">Language</label>
+                        <div class="flex gap-4 mt-2">
+                            <label class="flex items-center gap-2">
+                                <input type="radio" name="language" value="false" checked>
+                                <span class="text-sm">English</span>
+                            </label>
+                            <label class="flex items-center gap-2">
+                                <input type="radio" name="language" value="true">
+                                <span class="text-sm">Arabic</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label">Numbered Sections/Rules (Optional)</label>
+                        <div id="sections-container" class="space-y-3">
+                            <div class="flex gap-2">
+                                <span class="text-sm text-muted mt-2" style="min-width: 20px;">1.</span>
+                                <textarea class="input textarea flex-1" placeholder="Enter section 1 content" rows="2"></textarea>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-secondary mt-2" onclick="addSection()">
+                            <span>+</span>
+                            Add Section
+                        </button>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button type="submit" class="btn btn-primary px-6">Add Type</button>
+                        <button type="button" class="btn btn-secondary px-6" onclick="closeAddTypeModal()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Type Modal -->
+    <div id="edit-type-modal" class="modal">
+        <div class="modal-content max-w-2xl">
+            <div class="modal-header">
+                <h2 class="text-xl font-bold">Edit Acknowledgment Type</h2>
+                <button class="modal-close" onclick="closeEditTypeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-type-form" class="space-y-6">
+                    <!-- Same form fields as add type -->
+                    <div class="form-group">
+                        <label class="label">Title *</label>
+                        <input type="text" class="input" id="edit-type-title" placeholder="Enter acknowledgment title" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="label">Description *</label>
+                        <input type="text" class="input" id="edit-type-description" placeholder="Enter brief description" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label">Content (Optional)</label>
+                        <textarea class="input textarea" id="edit-type-content" placeholder="Enter detailed acknowledgment content"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label class="label">Icon Image (Optional)</label>
+                            <input type="file" class="input" id="edit-type-icon" accept="image/*" onchange="handleEditImageUpload(event, 'icon')">
+                            <div id="edit-icon-preview" class="hidden mt-2"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="label">Background Image (Optional)</label>
+                            <input type="file" class="input" id="edit-type-background" accept="image/*" onchange="handleEditImageUpload(event, 'background')">
+                            <div id="edit-background-preview" class="hidden mt-2"></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label class="label">Text Color</label>
+                            <input type="color" class="input" id="edit-type-text-color" value="#000000">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="label">Text Alignment</label>
+                            <select class="input" id="edit-type-text-alignment">
+                                <option value="left">Left</option>
+                                <option value="center">Center</option>
+                                <option value="right">Right</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label">Language</label>
+                        <div class="flex gap-4 mt-2">
+                            <label class="flex items-center gap-2">
+                                <input type="radio" name="edit-language" value="false" checked>
+                                <span class="text-sm">English</span>
+                            </label>
+                            <label class="flex items-center gap-2">
+                                <input type="radio" name="edit-language" value="true">
+                                <span class="text-sm">Arabic</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label">Numbered Sections/Rules (Optional)</label>
+                        <div id="edit-sections-container" class="space-y-3">
+                            <!-- Sections will be populated dynamically -->
+                        </div>
+                        <button type="button" class="btn btn-secondary mt-2" onclick="addEditSection()">
+                            <span>+</span>
+                            Add Section
+                        </button>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button type="submit" class="btn btn-primary px-6">Update Type</button>
+                        <button type="button" class="btn btn-secondary px-6" onclick="closeEditTypeModal()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submission View Modal -->
+    <div id="submission-modal" class="modal">
+        <div class="modal-content max-w-4xl">
+            <div class="modal-header">
+                <h2 id="submission-modal-title" class="text-xl font-bold">Submission Details</h2>
+                <button class="modal-close" onclick="closeSubmissionModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="submission-modal-content">
+                    <!-- Content will be dynamically populated -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast container -->
+    <div id="toast-container"></div>
+
+    <script>
+        // Application State
+        let acknowledgmentTypes = [
+            {
+                id: 'remote-work',
+                title: 'Remote Area Working Acknowledgement',
+                description: 'إقرار إلتزام بتعليمات العمل في المناطق النائية',
+                icon: '💻',
+                isArabic: true,
+                content: {
+                    arabic: 'إقرار إلتزام بتعليمات العمل في المناطق النائية',
+                    subtitle: 'Remote Area Working Acknowledgement',
+                    description: `أقر بأنني تقدمت بناءاً على رغبتي واختياري بطلب الأنتقال للعمل في المنطقة النائية لمدة سنتين او في اي وقت يحدد حسب مايتطلبه العمل إستناداً إلى أنظمة التنقل في إدارة الأمن الصناعي
+
+كما أنني أوافق على الشروط الواردة أدناه الخاصة بالعمل في المناطق النائية:-`,
+                    rules: [
+                        'إستخدام السكن الموفر من قبل الشركة طيلة فترة النوبة الأسبوعية.',
+                        'إستخدام المواصلات الموفرة من قبل الشركة وعدم إستخدام المركبة الشخصية للتنقل للعمل',
+                        'الإلتزام واتباع جميع أنظمة وتعليمات السلامة وفق سياسات وأنظمة الشركة.'
+                    ]
+                }
+            },
+            {
+                id: 'transfer',
+                title: 'Transfer Acknowledgment',
+                description: 'Acknowledge transfer policies and procedures',
+                icon: '📋',
+                isArabic: false
+            },
+            {
+                id: 'safety',
+                title: 'Safety Acknowledgment',
+                description: 'Acknowledge safety protocols and guidelines',
+                icon: '🛡️',
+                isArabic: false
+            },
+            {
+                id: 'security',
+                title: 'Security Acknowledgment',
+                description: 'Acknowledge security policies and data protection',
+                icon: '⚠️',
+                isArabic: false
+            },
+            {
+                id: 'training',
+                title: 'Training Acknowledgment',
+                description: 'Acknowledge completion of mandatory training',
+                icon: '👥',
+                isArabic: false
+            }
+        ];
+
+        let submissions = [];
+        let formData = {
+            requestNo: '',
+            employeeName: '',
+            acknowledged: false
+        };
+        let selectedType = '';
+        let editingType = null;
+        let newTypeData = {
+            title: '',
+            description: '',
+            content: '',
+            sections: [''],
+            iconImage: '',
+            backgroundImage: '',
+            textColor: '#000000',
+            textAlignment: 'left',
+            isArabic: false
+        };
+
+        // Theme Management
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('theme-icon');
+            
+            if (body.classList.contains('dark')) {
+                body.classList.remove('dark');
+                themeIcon.textContent = '🌙';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.classList.add('dark');
+                themeIcon.textContent = '☀️';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Initialize theme
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const themeIcon = document.getElementById('theme-icon');
+            
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark');
+                themeIcon.textContent = '☀️';
+            }
+        }
+
+        // Toast Notifications
+        function showToast(title, description, variant = 'default') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${variant}`;
+            
+            toast.innerHTML = `
+                <div class="toast-title">${title}</div>
+                <div class="toast-description">${description}</div>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.classList.add('show'), 100);
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => container.removeChild(toast), 300);
+            }, 3000);
+        }
+
+        // Render Acknowledgment Types
+        function renderAcknowledmentTypes() {
+            const container = document.getElementById('acknowledgment-types');
+            container.innerHTML = acknowledgmentTypes.map(type => {
+                const canEdit = !type.id.startsWith('default-');
+                return `
+                    <div class="card acknowledgment-card" 
+                         onclick="selectType('${type.id}')"
+                         style="background-image: ${type.backgroundImage ? `url(${type.backgroundImage})` : 'none'}; 
+                                background-size: cover; 
+                                background-position: center;
+                                text-align: ${type.textAlignment || 'center'};">
+                        ${type.backgroundImage ? '<div style="position: absolute; inset: 0; background: rgba(0,0,0,0.2);"></div>' : ''}
+                        
+                        ${canEdit ? `
+                            <div class="actions-container">
+                                <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); editType('${type.id}')" 
+                                        style="color: #3b82f6; background: rgba(255,255,255,0.9);">
+                                    ✏️
+                                </button>
+                                <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); deleteType('${type.id}')" 
+                                        style="color: #ef4444; background: rgba(255,255,255,0.9);">
+                                    🗑️
+                                </button>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="card-content relative" style="z-index: 1;">
+                            <div class="icon-container">
+                                ${type.iconImage ? 
+                                    `<img src="${type.iconImage}" alt="Icon" style="width: 2rem; height: 2rem; border-radius: 50%; object-fit: cover;">` :
+                                    `<span style="font-size: 2rem; color: white;">${type.icon}</span>`
+                                }
+                            </div>
+                            <h3 class="card-title" style="color: ${type.textColor || 'inherit'};">
+                                ${type.title}
+                            </h3>
+                            <p class="text-sm text-muted" style="color: ${type.textColor ? type.textColor + 'CC' : 'inherit'};">
+                                ${type.description}
+                            </p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Select Type
+        function selectType(typeId) {
+            selectedType = typeId;
+            const currentYear = new Date().getFullYear();
+            const randomNum = Math.floor(Math.random() * 1000000);
+            
+            formData = {
+                requestNo: `${currentYear}/${randomNum}`,
+                employeeName: '',
+                acknowledged: false
+            };
+            
+            openAcknowledgmentModal();
+        }
+
+        // Modal Management
+        function openAcknowledgmentModal() {
+            const modal = document.getElementById('acknowledgment-modal');
+            const selectedAck = acknowledgmentTypes.find(t => t.id === selectedType);
+            
+            if (!selectedAck) return;
+            
+            document.getElementById('modal-title').textContent = selectedAck.title;
+            
+            const content = generateModalContent(selectedAck);
+            document.getElementById('modal-content').innerHTML = content;
+            
+            modal.classList.add('show');
+        }
+
+        function closeAcknowledgmentModal() {
+            document.getElementById('acknowledgment-modal').classList.remove('show');
+        }
+
+        function generateModalContent(selectedAck) {
+            if (selectedAck.id === 'remote-work' && selectedAck.content) {
+                return `
+                    <!-- Header with Arabic title -->
+                    <div class="text-center space-y-3" style="padding-bottom: 1.5rem;">
+                        <h1 class="text-2xl font-bold" style="color: #dc2626;" dir="rtl">
+                            ${selectedAck.content.arabic}
+                        </h1>
+                        <h2 class="text-lg font-medium" style="color: #374151;">
+                            ${selectedAck.content.subtitle}
+                        </h2>
+                        <hr class="separator">
+                    </div>
+
+                    <!-- Content -->
+                    <div class="space-y-6">
+                        <div class="text-right" dir="rtl">
+                            <p style="color: #1f2937; line-height: 1.6;">${selectedAck.content.description}</p>
+                        </div>
+
+                        ${selectedAck.content.rules ? `
+                            <div class="text-right numbered-list" dir="rtl">
+                                ${selectedAck.content.rules.map(rule => `
+                                    <div class="list-item">
+                                        <span style="color: #1f2937; line-height: 1.6; flex: 1; text-align: right;">
+                                            ${rule}
+                                        </span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <!-- Notice -->
+                    <div class="notice-box">
+                        <div class="notice-indicator"></div>
+                        <p style="color: hsl(210, 100%, 30%); font-size: 0.875rem;">
+                            The content of this item will be sent as an e-mail message to the person or group assigned to the item.
+                        </p>
+                    </div>
+
+                    <!-- Form -->
+                    <div class="space-y-6">
+                        <div class="form-section-header">
+                            <h3>Request Information</h3>
+                        </div>
+                        
+                        <div class="space-y-6" style="padding: 0 1rem;">
+                            <div class="form-group">
+                                <label class="label">Request No:</label>
+                                <input type="text" class="input form-input-dark" value="${formData.requestNo}" 
+                                       onchange="updateFormData('requestNo', this.value)">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="label">Employee Name:</label>
+                                <input type="text" class="input form-input-dark" value="${formData.employeeName}" 
+                                       placeholder="Enter employee name"
+                                       onchange="updateFormData('employeeName', this.value)">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="label">Acknowledgment *</label>
+                                <div class="flex items-center gap-3">
+                                    <input type="checkbox" class="checkbox" ${formData.acknowledged ? 'checked' : ''} 
+                                           onchange="updateFormData('acknowledged', this.checked)"
+                                           style="border: 2px solid var(--primary);">
+                                    <label class="text-sm" style="color: #374151; line-height: 1.6; flex: 1;">
+                                        ${selectedAck.isArabic ? 
+                                            'أقر بأنني قد قرأت وفهمت ووافقت على السياسات والإجراءات المذكورة أعلاه' : 
+                                            'I acknowledge that I have read, understood and agree to the above policies and procedures'
+                                        }
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="flex gap-3" style="padding-top: 1.5rem;">
+                        <button class="btn btn-success" style="padding: 0.5rem 2rem;" onclick="submitAcknowledgment()">
+                            Submit
+                        </button>
+                        <button class="btn btn-destructive" style="padding: 0.5rem 2rem;" onclick="closeAcknowledgmentModal()">
+                            Cancel
+                        </button>
+                    </div>
+                `;
+            } else {
+                return `
+                    <!-- Default modal for other acknowledgment types -->
+                    <div class="text-center space-y-3" style="padding-bottom: 1.5rem;">
+                        <h1 class="text-2xl font-bold" style="color: #1f2937;">
+                            ${selectedAck.title}
+                        </h1>
+                        <hr class="separator">
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <!-- Content -->
+                        ${selectedAck.content?.description ? `
+                            <div class="text-right" dir="rtl">
+                                <p style="color: #1f2937; line-height: 1.6; white-space: pre-line;">
+                                    ${selectedAck.content.description}
+                                </p>
+                            </div>
+                        ` : ''}
+
+                        <!-- Numbered Rules -->
+                        ${selectedAck.content?.rules && selectedAck.content.rules.length > 0 ? `
+                            <div class="text-right numbered-list" dir="rtl">
+                                ${selectedAck.content.rules.map(rule => `
+                                    <div class="list-item">
+                                        <span style="color: #1f2937; line-height: 1.6; flex: 1; text-align: right;">
+                                            ${rule}
+                                        </span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+
+                        <div class="notice-box">
+                            <div class="notice-indicator"></div>
+                            <p style="color: hsl(210, 100%, 30%); font-size: 0.875rem;">
+                                The content of this item will be sent as an e-mail message to the person or group assigned to the item.
+                            </p>
+                        </div>
+
+                        <div class="space-y-6">
+                            <div class="form-section-header">
+                                <h3>Request Information</h3>
+                            </div>
+                            
+                            <div class="space-y-6" style="padding: 0 1rem;">
+                                <div class="form-group">
+                                    <label class="label">Request No:</label>
+                                    <input type="text" class="input form-input-dark" value="${formData.requestNo}" 
+                                           onchange="updateFormData('requestNo', this.value)">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="label">Employee Name:</label>
+                                    <input type="text" class="input form-input-dark" value="${formData.employeeName}" 
+                                           placeholder="Enter employee name"
+                                           onchange="updateFormData('employeeName', this.value)">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="label">Acknowledgment *</label>
+                                    <div class="flex items-center gap-3">
+                                        <input type="checkbox" class="checkbox" ${formData.acknowledged ? 'checked' : ''} 
+                                               onchange="updateFormData('acknowledged', this.checked)"
+                                               style="border: 2px solid var(--primary);">
+                                        <label class="text-sm" style="color: #374151; line-height: 1.6; flex: 1;">
+                                            ${selectedAck.isArabic ? 
+                                                'أقر بأنني قد قرأت وفهمت ووافقت على السياسات والإجراءات المذكورة أعلاه' : 
+                                                'I acknowledge that I have read, understood and agree to the above policies and procedures'
+                                            }
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-3" style="padding-top: 1.5rem;">
+                            <button class="btn btn-success" style="padding: 0.5rem 2rem;" onclick="submitAcknowledgment()">
+                                Submit
+                            </button>
+                            <button class="btn btn-destructive" style="padding: 0.5rem 2rem;" onclick="closeAcknowledgmentModal()">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function updateFormData(field, value) {
+            formData[field] = value;
+        }
+
+        function submitAcknowledgment() {
+            if (!formData.acknowledged) {
+                showToast("Acknowledgment Required", "Please check the acknowledgment box to continue.", "destructive");
+                return;
+            }
+
+            const newSubmission = {
+                id: Date.now().toString(),
+                type: acknowledgmentTypes.find(t => t.id === selectedType)?.title || '',
+                employeeName: formData.employeeName,
+                requestNo: formData.requestNo,
+                date: new Date().toLocaleDateString(),
+                acknowledged: formData.acknowledged
+            };
+
+            submissions.push(newSubmission);
+            closeAcknowledgmentModal();
+            renderSubmissions();
+            showToast("Acknowledgment Submitted", "Your acknowledgment has been successfully recorded.");
+        }
+
+        // Add Type Modal
+        function openAddTypeModal() {
+            document.getElementById('add-type-modal').classList.add('show');
+            resetAddTypeForm();
+        }
+
+        function closeAddTypeModal() {
+            document.getElementById('add-type-modal').classList.remove('show');
+        }
+
+        function resetAddTypeForm() {
+            document.getElementById('add-type-form').reset();
+            document.getElementById('icon-preview').innerHTML = '';
+            document.getElementById('icon-preview').classList.add('hidden');
+            document.getElementById('background-preview').innerHTML = '';
+            document.getElementById('background-preview').classList.add('hidden');
+            
+            // Reset sections
+            const container = document.getElementById('sections-container');
+            container.innerHTML = `
+                <div class="flex gap-2">
+                    <span class="text-sm text-muted mt-2" style="min-width: 20px;">1.</span>
+                    <textarea class="input textarea flex-1" placeholder="Enter section 1 content" rows="2"></textarea>
+                </div>
+            `;
+            
+            newTypeData = {
+                title: '',
+                description: '',
+                content: '',
+                sections: [''],
+                iconImage: '',
+                backgroundImage: '',
+                textColor: '#000000',
+                textAlignment: 'left',
+                isArabic: false
+            };
+        }
+
+        // Handle form submission for add type
+        document.getElementById('add-type-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById('type-title').value;
+            const description = document.getElementById('type-description').value;
+            const content = document.getElementById('type-content').value;
+            const textColor = document.getElementById('type-text-color').value;
+            const textAlignment = document.getElementById('type-text-alignment').value;
+            const isArabic = document.querySelector('input[name="language"]:checked').value === 'true';
+            
+            if (!title || !description) {
+                showToast("Missing Information", "Please fill in all required fields.", "destructive");
+                return;
+            }
+            
+            // Get sections
+            const sectionTextareas = document.querySelectorAll('#sections-container textarea');
+            const sections = Array.from(sectionTextareas)
+                .map(textarea => textarea.value.trim())
+                .filter(section => section !== '');
+            
+            const newType = {
+                id: `custom-${Date.now()}`,
+                title: title,
+                description: description,
+                icon: '📄',
+                iconImage: newTypeData.iconImage,
+                backgroundImage: newTypeData.backgroundImage,
+                textColor: textColor,
+                textAlignment: textAlignment,
+                isArabic: isArabic,
+                content: {
+                    description: content,
+                    rules: sections
+                }
+            };
+            
+            acknowledgmentTypes.push(newType);
+            renderAcknowledmentTypes();
+            closeAddTypeModal();
+            showToast("Acknowledgment Type Added", "New acknowledgment type has been created successfully.");
+        });
+
+        // Edit Type Modal
+        function editType(typeId) {
+            const type = acknowledgmentTypes.find(t => t.id === typeId);
+            if (!type) return;
+            
+            editingType = type;
+            
+            // Populate form
+            document.getElementById('edit-type-title').value = type.title;
+            document.getElementById('edit-type-description').value = type.description;
+            document.getElementById('edit-type-content').value = type.content?.description || '';
+            document.getElementById('edit-type-text-color').value = type.textColor || '#000000';
+            document.getElementById('edit-type-text-alignment').value = type.textAlignment || 'left';
+            
+            // Set language radio
+            const isArabic = type.isArabic || false;
+            document.querySelector(`input[name="edit-language"][value="${isArabic}"]`).checked = true;
+            
+            // Set images
+            if (type.iconImage) {
+                const preview = document.getElementById('edit-icon-preview');
+                preview.innerHTML = `<div style="width: 4rem; height: 4rem; border-radius: 50%; overflow: hidden; border: 1px solid var(--border);">
+                    <img src="${type.iconImage}" alt="Icon preview" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>`;
+                preview.classList.remove('hidden');
+                newTypeData.iconImage = type.iconImage;
+            }
+            
+            if (type.backgroundImage) {
+                const preview = document.getElementById('edit-background-preview');
+                preview.innerHTML = `<div style="width: 100%; height: 5rem; border-radius: 0.5rem; overflow: hidden; border: 1px solid var(--border);">
+                    <img src="${type.backgroundImage}" alt="Background preview" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>`;
+                preview.classList.remove('hidden');
+                newTypeData.backgroundImage = type.backgroundImage;
+            }
+            
+            // Set sections
+            const container = document.getElementById('edit-sections-container');
+            const rules = type.content?.rules || [''];
+            container.innerHTML = rules.map((rule, index) => `
+                <div class="flex gap-2">
+                    <span class="text-sm text-muted mt-2" style="min-width: 20px;">${index + 1}.</span>
+                    <textarea class="input textarea flex-1" placeholder="Enter section ${index + 1} content" rows="2">${rule}</textarea>
+                    ${rules.length > 1 ? `
+                        <button type="button" class="btn btn-secondary btn-sm mt-1" style="color: #ef4444;" onclick="removeEditSection(${index})">
+                            Remove
+                        </button>
+                    ` : ''}
+                </div>
+            `).join('');
+            
+            document.getElementById('edit-type-modal').classList.add('show');
+        }
+
+        function closeEditTypeModal() {
+            document.getElementById('edit-type-modal').classList.remove('show');
+            editingType = null;
+            newTypeData = {
+                title: '',
+                description: '',
+                content: '',
+                sections: [''],
+                iconImage: '',
+                backgroundImage: '',
+                textColor: '#000000',
+                textAlignment: 'left',
+                isArabic: false
+            };
+        }
+
+        // Handle form submission for edit type
+        document.getElementById('edit-type-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!editingType) return;
+            
+            const title = document.getElementById('edit-type-title').value;
+            const description = document.getElementById('edit-type-description').value;
+            const content = document.getElementById('edit-type-content').value;
+            const textColor = document.getElementById('edit-type-text-color').value;
+            const textAlignment = document.getElementById('edit-type-text-alignment').value;
+            const isArabic = document.querySelector('input[name="edit-language"]:checked').value === 'true';
+            
+            if (!title || !description) {
+                showToast("Missing Information", "Please fill in all required fields.", "destructive");
+                return;
+            }
+            
+            // Get sections
+            const sectionTextareas = document.querySelectorAll('#edit-sections-container textarea');
+            const sections = Array.from(sectionTextareas)
+                .map(textarea => textarea.value.trim())
+                .filter(section => section !== '');
+            
+            const updatedType = {
+                ...editingType,
+                title: title,
+                description: description,
+                iconImage: newTypeData.iconImage,
+                backgroundImage: newTypeData.backgroundImage,
+                textColor: textColor,
+                textAlignment: textAlignment,
+                isArabic: isArabic,
+                content: {
+                    ...editingType.content,
+                    description: content,
+                    rules: sections
+                }
+            };
+            
+            const index = acknowledgmentTypes.findIndex(t => t.id === editingType.id);
+            acknowledgmentTypes[index] = updatedType;
+            
+            renderAcknowledmentTypes();
+            closeEditTypeModal();
+            showToast("Acknowledgment Updated", "Acknowledgment type has been updated successfully.");
+        });
+
+        function deleteType(typeId) {
+            acknowledgmentTypes = acknowledgmentTypes.filter(type => type.id !== typeId);
+            renderAcknowledmentTypes();
+            showToast("Acknowledgment Deleted", "Acknowledgment type has been deleted successfully.");
+        }
+
+        // Image Upload Handlers
+        function handleImageUpload(event, type) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const result = e.target.result;
+                    newTypeData[type === 'icon' ? 'iconImage' : 'backgroundImage'] = result;
+                    
+                    const previewId = type === 'icon' ? 'icon-preview' : 'background-preview';
+                    const preview = document.getElementById(previewId);
+                    
+                    if (type === 'icon') {
+                        preview.innerHTML = `<div style="width: 4rem; height: 4rem; border-radius: 50%; overflow: hidden; border: 1px solid var(--border);">
+                            <img src="${result}" alt="Icon preview" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>`;
+                    } else {
+                        preview.innerHTML = `<div style="width: 100%; height: 5rem; border-radius: 0.5rem; overflow: hidden; border: 1px solid var(--border);">
+                            <img src="${result}" alt="Background preview" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>`;
+                    }
+                    
+                    preview.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function handleEditImageUpload(event, type) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const result = e.target.result;
+                    newTypeData[type === 'icon' ? 'iconImage' : 'backgroundImage'] = result;
+                    
+                    const previewId = type === 'icon' ? 'edit-icon-preview' : 'edit-background-preview';
+                    const preview = document.getElementById(previewId);
+                    
+                    if (type === 'icon') {
+                        preview.innerHTML = `<div style="width: 4rem; height: 4rem; border-radius: 50%; overflow: hidden; border: 1px solid var(--border);">
+                            <img src="${result}" alt="Icon preview" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>`;
+                    } else {
+                        preview.innerHTML = `<div style="width: 100%; height: 5rem; border-radius: 0.5rem; overflow: hidden; border: 1px solid var(--border);">
+                            <img src="${result}" alt="Background preview" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>`;
+                    }
+                    
+                    preview.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Section Management
+        function addSection() {
+            const container = document.getElementById('sections-container');
+            const sectionCount = container.children.length + 1;
+            
+            const newSection = document.createElement('div');
+            newSection.className = 'flex gap-2';
+            newSection.innerHTML = `
+                <span class="text-sm text-muted mt-2" style="min-width: 20px;">${sectionCount}.</span>
+                <textarea class="input textarea flex-1" placeholder="Enter section ${sectionCount} content" rows="2"></textarea>
+                <button type="button" class="btn btn-secondary btn-sm mt-1" style="color: #ef4444;" onclick="removeSection(this)">
+                    Remove
+                </button>
+            `;
+            
+            container.appendChild(newSection);
+        }
+
+        function removeSection(button) {
+            const container = document.getElementById('sections-container');
+            if (container.children.length > 1) {
+                button.parentElement.remove();
+                
+                // Update numbering
+                Array.from(container.children).forEach((child, index) => {
+                    const span = child.querySelector('span');
+                    span.textContent = `${index + 1}.`;
+                    const textarea = child.querySelector('textarea');
+                    textarea.placeholder = `Enter section ${index + 1} content`;
+                });
+            }
+        }
+
+        function addEditSection() {
+            const container = document.getElementById('edit-sections-container');
+            const sectionCount = container.children.length + 1;
+            
+            const newSection = document.createElement('div');
+            newSection.className = 'flex gap-2';
+            newSection.innerHTML = `
+                <span class="text-sm text-muted mt-2" style="min-width: 20px;">${sectionCount}.</span>
+                <textarea class="input textarea flex-1" placeholder="Enter section ${sectionCount} content" rows="2"></textarea>
+                <button type="button" class="btn btn-secondary btn-sm mt-1" style="color: #ef4444;" onclick="removeEditSection(${sectionCount - 1})">
+                    Remove
+                </button>
+            `;
+            
+            container.appendChild(newSection);
+        }
+
+        function removeEditSection(index) {
+            const container = document.getElementById('edit-sections-container');
+            if (container.children.length > 1) {
+                container.children[index].remove();
+                
+                // Update numbering
+                Array.from(container.children).forEach((child, newIndex) => {
+                    const span = child.querySelector('span');
+                    span.textContent = `${newIndex + 1}.`;
+                    const textarea = child.querySelector('textarea');
+                    textarea.placeholder = `Enter section ${newIndex + 1} content`;
+                    const button = child.querySelector('button');
+                    if (button) {
+                        button.onclick = () => removeEditSection(newIndex);
+                    }
+                });
+            }
+        }
+
+        // Submissions Management
+        function renderSubmissions() {
+            const section = document.getElementById('submissions-section');
+            const list = document.getElementById('submissions-list');
+            
+            if (submissions.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+            
+            section.style.display = 'block';
+            
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const filteredSubmissions = submissions.filter(submission => 
+                searchTerm === '' || submission.employeeName.toLowerCase().includes(searchTerm)
+            );
+            
+            if (filteredSubmissions.length === 0 && searchTerm) {
+                list.innerHTML = `
+                    <div class="text-center py-8 text-muted">
+                        <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;">🔍</div>
+                        <p>No submissions found for "${searchTerm}"</p>
+                        <p class="text-sm">Try searching with a different employee name</p>
+                    </div>
+                `;
+            } else if (filteredSubmissions.length === 0) {
+                list.innerHTML = `
+                    <div class="text-center py-8 text-muted">
+                        <p>Enter an employee name to search for submissions</p>
+                    </div>
+                `;
+            } else {
+                list.innerHTML = filteredSubmissions.map(submission => `
+                    <div class="submission-item" onclick="openSubmissionModal('${submission.id}')">
+                        <div>
+                            <h3 class="font-medium">${submission.type}</h3>
+                            <p class="text-muted text-sm">Request No: ${submission.requestNo}</p>
+                            <p class="text-muted text-sm">Employee: ${submission.employeeName}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-muted text-sm">${submission.date}</p>
+                            <span class="text-success text-sm flex items-center gap-1">
+                                <span style="color: var(--success);">✓</span>
+                                Acknowledged
+                            </span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function filterSubmissions() {
+            renderSubmissions();
+        }
+
+        function openSubmissionModal(submissionId) {
+            const submission = submissions.find(s => s.id === submissionId);
+            if (!submission) return;
+            
+            const ackType = acknowledgmentTypes.find(type => type.title === submission.type);
+            
+            document.getElementById('submission-modal-title').textContent = submission.type;
+            
+            let contentHtml = `
+                <div class="space-y-6">
+                    <!-- Submission Info -->
+                    <div style="background-color: hsl(210, 40%, 96%); padding: 1.5rem;">
+                        <h3 class="font-medium mb-4" style="background-color: hsl(210, 40%, 90%); padding: 0.75rem; margin: -1.5rem -1.5rem 1rem;">
+                            Submission Information
+                        </h3>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="label">Request No:</label>
+                                <p style="color: #1f2937;">${submission.requestNo}</p>
+                            </div>
+                            <div>
+                                <label class="label">Employee Name:</label>
+                                <p style="color: #1f2937;">${submission.employeeName}</p>
+                            </div>
+                            <div>
+                                <label class="label">Date:</label>
+                                <p style="color: #1f2937;">${submission.date}</p>
+                            </div>
+                            <div>
+                                <label class="label">Status:</label>
+                                <span class="text-success flex items-center gap-1">
+                                    <span style="color: var(--success);">✓</span>
+                                    Acknowledged
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+            `;
+            
+            if (ackType?.content) {
+                contentHtml += `
+                    <div class="space-y-6">
+                        ${ackType.content.arabic ? `
+                            <div class="text-center" style="border-bottom: 1px solid var(--border); padding-bottom: 1.5rem;">
+                                <h1 class="text-2xl font-bold mb-2" style="color: #dc2626;" dir="rtl">
+                                    ${ackType.content.arabic}
+                                </h1>
+                                ${ackType.content.subtitle ? `
+                                    <h2 class="text-lg" style="color: #374151;">
+                                        ${ackType.content.subtitle}
+                                    </h2>
+                                ` : ''}
+                            </div>
+                        ` : ''}
+
+                        ${ackType.content.description ? `
+                            <div class="text-right" dir="rtl">
+                                <p style="color: #1f2937; line-height: 1.6; white-space: pre-line;">
+                                    ${ackType.content.description}
+                                </p>
+                            </div>
+                        ` : ''}
+
+                        ${ackType.content.rules && ackType.content.rules.length > 0 ? `
+                            <div class="text-right" dir="rtl">
+                                <ol style="list-style-type: decimal; list-style-position: inside; color: #1f2937; line-height: 1.6;">
+                                    ${ackType.content.rules.map(rule => `
+                                        <li style="margin-bottom: 0.5rem;">${rule}</li>
+                                    `).join('')}
+                                </ol>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+            
+            contentHtml += `
+                    <div class="notice-box" style="background-color: hsl(210, 100%, 95%); border-color: hsl(210, 100%, 80%);">
+                        <div class="notice-indicator"></div>
+                        <p style="color: hsl(210, 100%, 30%); font-size: 0.875rem;">
+                            This acknowledgment has been digitally signed and recorded in the system.
+                        </p>
+                    </div>
+
+                    <div class="flex gap-3" style="padding-top: 1rem;">
+                        <button class="btn btn-primary px-6" onclick="exportSubmissionToPDF('${submission.id}')">
+                            <span>📥</span>
+                            Export PDF
+                        </button>
+                        <button class="btn btn-secondary px-6" onclick="closeSubmissionModal()">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('submission-modal-content').innerHTML = contentHtml;
+            document.getElementById('submission-modal').classList.add('show');
+        }
+
+        function closeSubmissionModal() {
+            document.getElementById('submission-modal').classList.remove('show');
+        }
+
+        // PDF Export
+        function exportSubmissionToPDF(submissionId) {
+            const submission = submissions.find(s => s.id === submissionId);
+            if (!submission) return;
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const pageWidth = doc.internal.pageSize.width;
+            
+            // Header
+            doc.setFontSize(20);
+            doc.setFont('helvetica', 'bold');
+            doc.text('YSOD Digital Acknowledgment Form Hub', pageWidth / 2, 30, { align: 'center' });
+            
+            // Submission details
+            doc.setFontSize(16);
+            doc.text('Acknowledgment Submission', pageWidth / 2, 50, { align: 'center' });
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'normal');
+            
+            let yPosition = 80;
+            doc.text(`Type: ${submission.type}`, 20, yPosition);
+            yPosition += 15;
+            doc.text(`Request No: ${submission.requestNo}`, 20, yPosition);
+            yPosition += 15;
+            doc.text(`Employee Name: ${submission.employeeName}`, 20, yPosition);
+            yPosition += 15;
+            doc.text(`Date: ${submission.date}`, 20, yPosition);
+            yPosition += 15;
+            doc.text(`Status: ${submission.acknowledged ? 'Acknowledged' : 'Not Acknowledged'}`, 20, yPosition);
+            
+            // Find the acknowledgment type details
+            const ackType = acknowledgmentTypes.find(type => type.title === submission.type);
+            if (ackType?.content) {
+                yPosition += 30;
+                doc.setFont('helvetica', 'bold');
+                doc.text('Content:', 20, yPosition);
+                yPosition += 15;
+                doc.setFont('helvetica', 'normal');
+                
+                if (ackType.content.description) {
+                    const lines = doc.splitTextToSize(ackType.content.description, pageWidth - 40);
+                    doc.text(lines, 20, yPosition);
+                    yPosition += lines.length * 8;
+                }
+                
+                if (ackType.content.rules && ackType.content.rules.length > 0) {
+                    yPosition += 10;
+                    doc.setFont('helvetica', 'bold');
+                    doc.text('Rules/Sections:', 20, yPosition);
+                    yPosition += 15;
+                    doc.setFont('helvetica', 'normal');
+                    
+                    ackType.content.rules.forEach((rule, index) => {
+                        const ruleText = `${index + 1}. ${rule}`;
+                        const lines = doc.splitTextToSize(ruleText, pageWidth - 40);
+                        doc.text(lines, 20, yPosition);
+                        yPosition += lines.length * 8 + 5;
+                    });
+                }
+            }
+            
+            // Footer
+            yPosition += 30;
+            doc.setFont('helvetica', 'italic');
+            doc.setFontSize(10);
+            doc.text(`Generated on: ${new Date().toLocaleString()}`, 20, yPosition);
+            
+            doc.save(`acknowledgment_${submission.requestNo}.pdf`);
+            showToast("PDF Exported", "Acknowledgment has been exported successfully.");
+        }
+
+        // Modal click outside to close
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
+                if (e.target.id === 'acknowledgment-modal') closeAcknowledgmentModal();
+                if (e.target.id === 'add-type-modal') closeAddTypeModal();
+                if (e.target.id === 'edit-type-modal') closeEditTypeModal();
+                if (e.target.id === 'submission-modal') closeSubmissionModal();
+            }
+        });
+
+        // Initialize app
+        function init() {
+            initTheme();
+            renderAcknowledmentTypes();
+            renderSubmissions();
+        }
+
+        // Start the application
+        init();
+    </script>
+</body>
 </html>
