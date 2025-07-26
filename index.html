@@ -1131,7 +1131,7 @@
         function renderAcknowledmentTypes() {
             const container = document.getElementById('acknowledgment-types');
             container.innerHTML = acknowledgmentTypes.map(type => {
-                const canEdit = type.id.startsWith('custom-');
+                const canEdit = type.id.startsWith('custom-') || !['remote-work', 'transfer', 'safety', 'security', 'training'].includes(type.id);
                 return `
                     <div class="card acknowledgment-card" 
                          onclick="selectType('${type.id}')"
