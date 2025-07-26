@@ -1725,19 +1725,22 @@
         function removeEditSection(index) {
             const container = document.getElementById('edit-sections-container');
             if (container.children.length > 1) {
-                container.children[index].remove();
-                
-                // Update numbering
-                Array.from(container.children).forEach((child, newIndex) => {
-                    const span = child.querySelector('span');
-                    span.textContent = `${newIndex + 1}.`;
-                    const textarea = child.querySelector('textarea');
-                    textarea.placeholder = `Enter section ${newIndex + 1} content`;
-                    const button = child.querySelector('button');
-                    if (button) {
-                        button.onclick = () => removeEditSection(newIndex);
-                    }
-                });
+                const sections = Array.from(container.children);
+                if (sections[index]) {
+                    sections[index].remove();
+                    
+                    // Update numbering for remaining sections
+                    Array.from(container.children).forEach((child, newIndex) => {
+                        const span = child.querySelector('span');
+                        span.textContent = `${newIndex + 1}.`;
+                        const textarea = child.querySelector('textarea');
+                        textarea.placeholder = `Enter section ${newIndex + 1} content`;
+                        const button = child.querySelector('button');
+                        if (button && container.children.length > 1) {
+                            button.setAttribute('onclick', `removeEditSection(${newIndex})`);
+                        }
+                    });
+                }
             }
         }
 
