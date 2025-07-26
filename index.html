@@ -490,6 +490,33 @@
             z-index: 1;
         }
 
+        .actions-container {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            display: flex;
+            gap: 0.25rem;
+            z-index: 10;
+        }
+
+        .actions-container .btn {
+            width: 2rem;
+            height: 2rem;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 0.875rem;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .actions-container .btn:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.95) !important;
+        }
+
         .icon-container {
             width: 4rem;
             height: 4rem;
@@ -1131,7 +1158,7 @@
         function renderAcknowledmentTypes() {
             const container = document.getElementById('acknowledgment-types');
             container.innerHTML = acknowledgmentTypes.map(type => {
-                const canEdit = type.id.startsWith('custom-') || !['remote-work', 'transfer', 'safety', 'security', 'training'].includes(type.id);
+                // Show edit/delete buttons for all types (users can modify any type)
                 return `
                     <div class="card acknowledgment-card" 
                          onclick="selectType('${type.id}')"
@@ -1139,22 +1166,22 @@
                                 background-size: cover; 
                                 background-position: center;
                                 text-align: ${type.textAlignment || 'center'};">
-                        ${type.backgroundImage ? '<div style="position: absolute; inset: 0; background: rgba(0,0,0,0.2);"></div>' : ''}
+                        ${type.backgroundImage ? '<div style="position: absolute; inset: 0; background: rgba(0,0,0,0.2); z-index: 0;"></div>' : ''}
                         
-                        ${canEdit ? `
-                            <div class="actions-container">
-                                <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); editType('${type.id}')" 
-                                        style="color: #3b82f6; background: rgba(255,255,255,0.9);">
-                                    ✏️
-                                </button>
-                                <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); deleteType('${type.id}')" 
-                                        style="color: #ef4444; background: rgba(255,255,255,0.9);">
-                                    🗑️
-                                </button>
-                            </div>
-                        ` : ''}
+                        <div class="actions-container">
+                            <button class="btn" onclick="event.stopPropagation(); editType('${type.id}')" 
+                                    style="color: #3b82f6; background: rgba(255,255,255,0.9);" 
+                                    title="Edit Acknowledgment">
+                                📝
+                            </button>
+                            <button class="btn" onclick="event.stopPropagation(); deleteType('${type.id}')" 
+                                    style="color: #ef4444; background: rgba(255,255,255,0.9);" 
+                                    title="Delete Acknowledgment">
+                                🗑️
+                            </button>
+                        </div>
                         
-                        <div class="card-content relative" style="z-index: 1;">
+                        <div class="card-content" style="position: relative; z-index: 1;">
                             <div class="icon-container">
                                 ${type.iconImage ? 
                                     `<img src="${type.iconImage}" alt="Icon" style="width: 2rem; height: 2rem; border-radius: 50%; object-fit: cover;">` :
