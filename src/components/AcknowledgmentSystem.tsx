@@ -7,8 +7,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { FileText, Shield, Laptop, Users, AlertTriangle, CheckCircle, Plus, Trash2, Download, Search, Edit } from 'lucide-react';
+import { FileText, Shield, Laptop, Users, AlertTriangle, CheckCircle, Plus, Trash2, Download, Search, Edit, LogOut, User } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { UserData } from './AuthSystem';
 import jsPDF from 'jspdf';
 interface AcknowledgmentItem {
   id: string;
@@ -17,6 +18,7 @@ interface AcknowledgmentItem {
   requestNo: string;
   date: string;
   acknowledged: boolean;
+  userId: string; // Track which user submitted it
 }
 interface AcknowledgmentType {
   id: string;
@@ -74,7 +76,12 @@ const defaultAcknowledgmentTypes: AcknowledgmentType[] = [{
   icon: Users,
   isArabic: false
 }];
-export const AcknowledgmentSystem = () => {
+interface AcknowledgmentSystemProps {
+  user: UserData;
+  onLogout: () => void;
+}
+
+export const AcknowledgmentSystem = ({ user, onLogout }: AcknowledgmentSystemProps) => {
   const [selectedType, setSelectedType] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddTypeModalOpen, setIsAddTypeModalOpen] = useState(false);
@@ -125,10 +132,11 @@ export const AcknowledgmentSystem = () => {
     const newSubmission: AcknowledgmentItem = {
       id: Date.now().toString(),
       type: acknowledgmentTypes.find(t => t.id === selectedType)?.title || '',
-      employeeName: formData.employeeName,
+      employeeName: formData.employeeName || user.name, // Use logged-in user's name if not provided
       requestNo: formData.requestNo,
       date: new Date().toLocaleDateString(),
-      acknowledged: formData.acknowledged
+      acknowledged: formData.acknowledged,
+      userId: user.id
     };
     setSubmissions([...submissions, newSubmission]);
     setIsModalOpen(false);
@@ -138,6 +146,14 @@ export const AcknowledgmentSystem = () => {
     });
   };
   const handleAddNewType = () => {
+    if (user.role !== 'admin') {
+      toast({
+        title: "Access Denied",
+        description: "Only administrators can add new acknowledgment types.",
+        variant: "destructive"
+      });
+      return;
+    }
     if (!newTypeData.title || !newTypeData.description) {
       toast({
         title: "Missing Information",
@@ -201,6 +217,14 @@ export const AcknowledgmentSystem = () => {
     });
   };
   const handleDeleteType = (typeId: string) => {
+    if (user.role !== 'admin') {
+      toast({
+        title: "Access Denied",
+        description: "Only administrators can delete acknowledgment types.",
+        variant: "destructive"
+      });
+      return;
+    }
     setAcknowledgmentTypes(acknowledgmentTypes.filter(type => type.id !== typeId));
     toast({
       title: "Acknowledgment Deleted",
@@ -224,6 +248,14 @@ export const AcknowledgmentSystem = () => {
   };
 
   const handleEditType = (type: AcknowledgmentType) => {
+    if (user.role !== 'admin') {
+      toast({
+        title: "Access Denied",
+        description: "Only administrators can edit acknowledgment types.",
+        variant: "destructive"
+      });
+      return;
+    }
     setEditingType(type);
     setNewTypeData({
       title: type.title,
@@ -360,11 +392,16 @@ export const AcknowledgmentSystem = () => {
     });
   };
 
-  // Filter submissions based on search name
-  const filteredSubmissions = submissions.filter(submission => 
-    searchName.trim() === '' || 
-    submission.employeeName.toLowerCase().includes(searchName.toLowerCase())
-  );
+  // Filter submissions based on search name and user role
+  const filteredSubmissions = submissions.filter(submission => {
+    const matchesSearch = searchName.trim() === '' || 
+      submission.employeeName.toLowerCase().includes(searchName.toLowerCase());
+    
+    // Admin can see all submissions, users can only see their own
+    const hasAccess = user.role === 'admin' || submission.userId === user.id;
+    
+    return matchesSearch && hasAccess;
+  });
 
   const selectedAck = acknowledgmentTypes.find(t => t.id === selectedType);
   return <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 relative overflow-hidden">
@@ -376,28 +413,51 @@ export const AcknowledgmentSystem = () => {
       </div>
       
       <div className="container mx-auto px-6 py-8 relative z-10">
-        {/* Header with Theme Toggle */}
+        {/* Header with User Info and Controls */}
         <div className="flex justify-between items-start mb-12">
           <div className="text-center flex-1">
             <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-4">
               YSOD Digital Acknowledgment Form Hub
             </h1>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Select the type of acknowledgment you need to complete
+              {user.role === 'admin' 
+                ? 'Manage and monitor all acknowledgment types and submissions'
+                : 'Select the type of acknowledgment you need to complete'
+              }
             </p>
           </div>
-          <div className="ml-8">
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <div className="flex items-center gap-2 mb-1">
+                <User className="w-4 h-4" />
+                <span className="font-medium">{user.name}</span>
+              </div>
+              <div className="text-sm text-muted-foreground">
+                {user.role === 'admin' ? 'Administrator' : 'User'}
+              </div>
+            </div>
             <ThemeToggle />
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={onLogout}
+              className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
           </div>
         </div>
 
-        {/* Add New Type Button */}
-        <div className="flex justify-end mb-6">
-          <Button onClick={() => setIsAddTypeModalOpen(true)} className="bg-gradient-primary hover:opacity-90 text-white shadow-glow border-0">
-            <Plus className="w-4 h-4 mr-2" />
-            Add New Acknowledgment Type
-          </Button>
-        </div>
+        {/* Add New Type Button - Only for Admins */}
+        {user.role === 'admin' && (
+          <div className="flex justify-end mb-6">
+            <Button onClick={() => setIsAddTypeModalOpen(true)} className="bg-gradient-primary hover:opacity-90 text-white shadow-glow border-0">
+              <Plus className="w-4 h-4 mr-2" />
+              Add New Acknowledgment Type
+            </Button>
+          </div>
+        )}
 
         {/* Acknowledgment Types Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
@@ -415,7 +475,7 @@ export const AcknowledgmentSystem = () => {
           >
                 {type.backgroundImage && <div className="absolute inset-0 bg-black/20"></div>}
                 <CardHeader className={`text-center relative z-10 ${type.textAlignment === 'center' ? 'text-center' : type.textAlignment === 'right' ? 'text-right' : 'text-left'}`}>
-                  {!type.id.startsWith('default-') && (
+                  {user.role === 'admin' && !type.id.startsWith('default-') && (
                     <div className="absolute top-2 right-2 flex gap-1">
                       <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-blue-500 hover:text-blue-700 hover:bg-blue-50" onClick={e => {
                         e.stopPropagation();
@@ -456,11 +516,11 @@ export const AcknowledgmentSystem = () => {
         </div>
 
         {/* Recent Submissions */}
-        {submissions.length > 0 && <Card className="bg-card/50 backdrop-blur-sm">
+        {filteredSubmissions.length > 0 && <Card className="bg-card/50 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CheckCircle className="w-5 h-5 text-success" />
-                Your Submissions
+                {user.role === 'admin' ? 'All Submissions' : 'Your Submissions'}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -469,7 +529,7 @@ export const AcknowledgmentSystem = () => {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                   <Input
-                    placeholder="Search by employee name to view your submissions..."
+                    placeholder={user.role === 'admin' ? "Search by employee name..." : "Search your submissions..."}
                     value={searchName}
                     onChange={(e) => setSearchName(e.target.value)}
                     className="pl-10"
