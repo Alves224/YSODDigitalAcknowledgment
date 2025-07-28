@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Shield, Mail } from 'lucide-react';
+import { sharePointService } from '@/services/sharepoint';
 
 export interface UserData {
   id: string;
@@ -14,36 +15,21 @@ interface AuthSystemProps {
   onLogin: (user: UserData) => void;
 }
 
-// Mock users for demonstration - in real SharePoint, this would come from SharePoint user profiles
-const mockUsers: UserData[] = [
-  { id: '1', email: 'admin@company.com', role: 'admin', name: 'System Administrator' },
-  { id: '2', email: 'john.smith@company.com', role: 'user', name: 'John Smith' },
-  { id: '3', email: 'sarah.johnson@company.com', role: 'user', name: 'Sarah Johnson' },
-  { id: '4', email: 'mike.wilson@company.com', role: 'admin', name: 'Mike Wilson' }
-];
-
 export const AuthSystem = ({ onLogin }: AuthSystemProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Simulate getting user email from SharePoint
+  // Get user email from SharePoint context
   const getSharePointUserEmail = async (): Promise<string | null> => {
-    // In real SharePoint integration, this would be:
-    // SP.ClientContext.get_current().get_web().get_currentUser().get_email()
-    // For demo purposes, we'll simulate different users
-    const demoEmails = [
-      'admin@company.com',
-      'john.smith@company.com', 
-      'sarah.johnson@company.com',
-      'mike.wilson@company.com'
-    ];
-    
-    // Simulate SharePoint API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // For demo, randomly select a user or use a specific one for testing
-    return demoEmails[0]; // Change index to test different users
+    try {
+      // Get current user from SharePoint context
+      const currentUser = sharePointService.getCurrentUser();
+      return currentUser?.email || null;
+    } catch (error) {
+      console.error('Error getting SharePoint user:', error);
+      return null;
+    }
   };
 
   const handleAutoLogin = async () => {
@@ -62,10 +48,17 @@ export const AuthSystem = ({ onLogin }: AuthSystemProps) => {
 
       setCurrentUserEmail(userEmail);
       
-      // Find user by email
-      const user = mockUsers.find(u => u.email === userEmail);
+      // Get user from SharePoint Users list
+      const sharePointUser = await sharePointService.getUserByEmail(userEmail);
       
-      if (user) {
+      if (sharePointUser) {
+        const user: UserData = {
+          id: sharePointUser.Id.toString(),
+          email: sharePointUser.Title,
+          role: sharePointUser.UserRole.toLowerCase() as 'admin' | 'user',
+          name: sharePointUser.UserName
+        };
+
         onLogin(user);
         toast({
           title: "Login Successful",

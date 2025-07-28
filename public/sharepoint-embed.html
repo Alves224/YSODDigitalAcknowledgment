@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YSOD Digital Acknowledgment Hub - SharePoint Integration</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .embed-container {
+            width: 100%;
+            height: 100vh;
+            border: none;
+            overflow: hidden;
+        }
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .error {
+            background: #ff4757;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <h2>Loading YSOD Acknowledgment Hub</h2>
+        <p>Connecting to SharePoint...</p>
+    </div>
+    
+    <div id="error" class="error" style="display: none;">
+        <h3>SharePoint Integration Error</h3>
+        <p>Unable to connect to SharePoint. Please ensure you have proper permissions and try again.</p>
+        <button onclick="location.reload()">Retry</button>
+    </div>
+
+    <iframe id="app-frame" class="embed-container" style="display: none;"></iframe>
+
+    <script>
+        // SharePoint Integration Script
+        (function() {
+            'use strict';
+
+            // Wait for SharePoint context to be available
+            function waitForSPContext() {
+                if (typeof _spPageContextInfo !== 'undefined') {
+                    initializeApp();
+                } else {
+                    // Fallback for demo/development
+                    console.warn('SharePoint context not found, using demo mode');
+                    setTimeout(initializeApp, 1000);
+                }
+            }
+
+            function initializeApp() {
+                try {
+                    // Hide loading screen
+                    document.getElementById('loading').style.display = 'none';
+                    
+                    // Show the main application iframe
+                    const iframe = document.getElementById('app-frame');
+                    
+                    // For SharePoint integration, you would typically:
+                    // 1. Point to your built React app hosted in SharePoint Document Library
+                    // 2. Or embed the built JavaScript/CSS files directly
+                    
+                    // For demo purposes, using the local development URL
+                    // In production, replace with your SharePoint-hosted app URL
+                    iframe.src = window.location.origin + '/';
+                    iframe.style.display = 'block';
+                    
+                    // Add message listener for iframe communication
+                    window.addEventListener('message', function(event) {
+                        // Handle messages from the React app if needed
+                        if (event.data.type === 'RESIZE') {
+                            iframe.style.height = event.data.height + 'px';
+                        }
+                    });
+
+                } catch (error) {
+                    console.error('Error initializing app:', error);
+                    showError();
+                }
+            }
+
+            function showError() {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+            }
+
+            // SharePoint-specific functions
+            window.SPAcknowledgmentHub = {
+                // Get current SharePoint user
+                getCurrentUser: function() {
+                    if (typeof _spPageContextInfo !== 'undefined') {
+                        return {
+                            email: _spPageContextInfo.userEmail,
+                            displayName: _spPageContextInfo.userDisplayName,
+                            userId: _spPageContextInfo.userId
+                        };
+                    }
+                    return null;
+                },
+
+                // Get SharePoint web URL
+                getWebUrl: function() {
+                    return typeof _spPageContextInfo !== 'undefined' 
+                        ? _spPageContextInfo.webAbsoluteUrl 
+                        : window.location.origin;
+                },
+
+                // Helper function to make SharePoint REST API calls
+                makeRestCall: function(url, method, data) {
+                    return new Promise((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open(method || 'GET', url);
+                        xhr.setRequestHeader('Accept', 'application/json;odata=verbose');
+                        
+                        if (method === 'POST' || method === 'PUT') {
+                            xhr.setRequestHeader('Content-Type', 'application/json;odata=verbose');
+                            if (typeof _spPageContextInfo !== 'undefined') {
+                                xhr.setRequestHeader('X-RequestDigest', _spPageContextInfo.formDigestValue);
+                            }
+                        }
+
+                        xhr.onload = function() {
+                            if (xhr.status >= 200 && xhr.status < 300) {
+                                resolve(JSON.parse(xhr.responseText));
+                            } else {
+                                reject(new Error('HTTP ' + xhr.status + ': ' + xhr.statusText));
+                            }
+                        };
+
+                        xhr.onerror = function() {
+                            reject(new Error('Network error'));
+                        };
+
+                        xhr.send(data ? JSON.stringify(data) : null);
+                    });
+                }
+            };
+
+            // Start the application
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', waitForSPContext);
+            } else {
+                waitForSPContext();
+            }
+
+        })();
+    </script>
+</body>
+</html>
