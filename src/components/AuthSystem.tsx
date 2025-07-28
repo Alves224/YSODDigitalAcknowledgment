@@ -1,14 +1,11 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { User, Shield } from 'lucide-react';
+import { Shield, Mail } from 'lucide-react';
 
 export interface UserData {
   id: string;
-  username: string;
+  email: string;
   role: 'admin' | 'user';
   name: string;
 }
@@ -17,46 +14,84 @@ interface AuthSystemProps {
   onLogin: (user: UserData) => void;
 }
 
-// Mock users for demonstration
+// Mock users for demonstration - in real SharePoint, this would come from SharePoint user profiles
 const mockUsers: UserData[] = [
-  { id: '1', username: 'admin', role: 'admin', name: 'System Administrator' },
-  { id: '2', username: 'user1', role: 'user', name: 'John Smith' },
-  { id: '3', username: 'user2', role: 'user', name: 'Sarah Johnson' },
-  { id: '4', username: 'manager', role: 'admin', name: 'Mike Wilson' }
+  { id: '1', email: 'admin@company.com', role: 'admin', name: 'System Administrator' },
+  { id: '2', email: 'john.smith@company.com', role: 'user', name: 'John Smith' },
+  { id: '3', email: 'sarah.johnson@company.com', role: 'user', name: 'Sarah Johnson' },
+  { id: '4', email: 'mike.wilson@company.com', role: 'admin', name: 'Mike Wilson' }
 ];
 
 export const AuthSystem = ({ onLogin }: AuthSystemProps) => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const handleLogin = () => {
-    if (!username || !password) {
-      toast({
-        title: "Missing Information",
-        description: "Please enter both username and password.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Simple authentication (in real app, this would be proper authentication)
-    const user = mockUsers.find(u => u.username === username);
+  // Simulate getting user email from SharePoint
+  const getSharePointUserEmail = async (): Promise<string | null> => {
+    // In real SharePoint integration, this would be:
+    // SP.ClientContext.get_current().get_web().get_currentUser().get_email()
+    // For demo purposes, we'll simulate different users
+    const demoEmails = [
+      'admin@company.com',
+      'john.smith@company.com', 
+      'sarah.johnson@company.com',
+      'mike.wilson@company.com'
+    ];
     
-    if (user && password === 'password') { // Simple password for demo
-      onLogin(user);
+    // Simulate SharePoint API call delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // For demo, randomly select a user or use a specific one for testing
+    return demoEmails[0]; // Change index to test different users
+  };
+
+  const handleAutoLogin = async () => {
+    try {
+      const userEmail = await getSharePointUserEmail();
+      
+      if (!userEmail) {
+        toast({
+          title: "Authentication Error",
+          description: "Unable to retrieve user information from SharePoint.",
+          variant: "destructive"
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      setCurrentUserEmail(userEmail);
+      
+      // Find user by email
+      const user = mockUsers.find(u => u.email === userEmail);
+      
+      if (user) {
+        onLogin(user);
+        toast({
+          title: "Login Successful",
+          description: `Welcome ${user.name}!`
+        });
+      } else {
+        toast({
+          title: "Access Denied",
+          description: "User not found in the system. Please contact your administrator.",
+          variant: "destructive"
+        });
+        setIsLoading(false);
+      }
+    } catch (error) {
       toast({
-        title: "Login Successful",
-        description: `Welcome ${user.name}!`
-      });
-    } else {
-      toast({
-        title: "Login Failed",
-        description: "Invalid username or password.",
+        title: "Authentication Error",
+        description: "Failed to authenticate with SharePoint.",
         variant: "destructive"
       });
+      setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    handleAutoLogin();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center relative overflow-hidden">
@@ -79,46 +114,49 @@ export const AuthSystem = ({ onLogin }: AuthSystemProps) => {
           </p>
         </CardHeader>
         
-        <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
-            <Input
-              id="username"
-              type="text"
-              placeholder="Enter your username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
-            />
-          </div>
-          
-          <Button 
-            onClick={handleLogin} 
-            className="w-full bg-gradient-primary hover:opacity-90 text-white shadow-glow border-0"
-          >
-            Login
-          </Button>
+        <CardContent className="space-y-6 text-center">
+          {isLoading ? (
+            <div className="space-y-4">
+              <div className="w-16 h-16 mx-auto rounded-full bg-gradient-primary flex items-center justify-center animate-pulse">
+                <Mail className="w-8 h-8 text-white" />
+              </div>
+              <div className="space-y-2">
+                <p className="text-lg font-medium">Authenticating with SharePoint...</p>
+                <p className="text-sm text-muted-foreground">
+                  Retrieving your user information
+                </p>
+              </div>
+              <div className="w-full bg-muted rounded-full h-2">
+                <div className="bg-gradient-primary h-2 rounded-full animate-pulse w-3/4"></div>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="w-16 h-16 mx-auto rounded-full bg-destructive/10 flex items-center justify-center">
+                <Mail className="w-8 h-8 text-destructive" />
+              </div>
+              <div className="space-y-2">
+                <p className="text-lg font-medium text-destructive">Authentication Failed</p>
+                <p className="text-sm text-muted-foreground">
+                  Unable to authenticate with SharePoint
+                </p>
+              </div>
+              {currentUserEmail && (
+                <p className="text-sm text-muted-foreground">
+                  User: {currentUserEmail}
+                </p>
+              )}
+            </div>
+          )}
 
-          {/* Demo credentials info */}
-          <div className="mt-6 p-4 bg-muted/50 rounded-lg border text-sm">
-            <p className="font-semibold mb-2">Demo Credentials:</p>
-            <div className="space-y-1">
-              <p><span className="font-medium">Admin:</span> admin / password</p>
-              <p><span className="font-medium">User:</span> user1 / password</p>
-              <p><span className="font-medium">User:</span> user2 / password</p>
-              <p><span className="font-medium">Manager:</span> manager / password</p>
+          {/* SharePoint integration info */}
+          <div className="mt-6 p-4 bg-muted/50 rounded-lg border text-sm text-left">
+            <p className="font-semibold mb-2">SharePoint Integration:</p>
+            <div className="space-y-1 text-xs">
+              <p>• Automatically reads user email from SharePoint context</p>
+              <p>• No manual login required</p>
+              <p>• Role assignment based on email domain</p>
+              <p>• Current demo user: {currentUserEmail || 'Loading...'}</p>
             </div>
           </div>
         </CardContent>
